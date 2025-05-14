@@ -1,0 +1,6 @@
+
+workspace_path: "./workspace"
+database_path: "state.db"
+polling_interval_seconds: 5
+gemini_api_key_env_var: "GEMINI_API_KEY"
+log_level: "INFO"
