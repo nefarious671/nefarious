@@ -74,7 +74,7 @@ class RateLimiter:
         self._last_call = time.perf_counter()
 
 
-def gen_prompt(topic: str, last_thought: str) -> str:
+def gen_prompt(topic: str, last_thought: str, loops_left: int) -> str:
     from textwrap import dedent
 
     return dedent(
@@ -83,17 +83,25 @@ def gen_prompt(topic: str, last_thought: str) -> str:
 
         📌 Topic: {topic}
 
-        1. Define a goal to better understand the topic above.
-        2. Think and evaluate recursively. If comprehension is satisfactory, redefine your goal.
+        Evaluate whether your next recursive move should be **expansion** (to uncover new meaning)
+        or **summarization** (to compress and stabilize current understanding).
+
+        Steps:
+        1. Decide whether to expand or summarize. State your decision clearly at the top: `Next mode: expand` or `Next mode: summarize`
+        2. If expanding: explore new ideas, patterns, or questions based on your last thought.
+        3. If summarizing: compress and stabilize your current understanding while preserving its structure.
+        4. If comprehension is satisfactory, redefine your goal.
 
         Rules:
         — No praise, apologies, or compliments.
         — Each loop must add at least one new refinement.
+        — You must declare your recursion mode and follow through.
 
         Last thought:
         {last_thought}
         """
     ).strip()
+
 
 
 def suggest_filename(topic: str) -> str:
@@ -153,7 +161,8 @@ class RecursiveAgent:
                 if self.cancel_requested:
                     break
 
-                prompt = gen_prompt(self.topic, self._last_thought)
+                prompt = gen_prompt(self.topic, self._last_thought, self.loops - i + 1)
+
                 self.rate.wait()
 
                 try:
