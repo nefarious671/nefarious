@@ -26,6 +26,7 @@ from __future__ import annotations
 import argparse
 import io
 import os
+import signal
 import sys
 import time
 import tempfile
@@ -45,6 +46,23 @@ DELIM = "\n\n---\n\n"  # delimiter between replies in temp files
 # ──────────────────────────────────────────────────────────────────────
 # Helpers & polyfills
 # ──────────────────────────────────────────────────────────────────────
+
+PREF_FILE = os.path.join(os.path.expanduser("~"), ".laser_lens_model_pref")
+
+def load_saved_model() -> str:
+    try:
+        with open(PREF_FILE, "r", encoding="utf-8") as f:
+            return f.read().strip()
+    except Exception:
+        return MODEL_CHOICES[0]  # fallback to default
+
+def save_model_preference(model_name: str):
+    try:
+        with open(PREF_FILE, "w", encoding="utf-8") as f:
+            f.write(model_name)
+    except Exception as e:
+        print(f"Failed to save model preference: {e}")
+
 
 def _rerun():
     if hasattr(st, "rerun"):
@@ -255,7 +273,10 @@ def ui_main():
         with st.form(key="controls"):
             topic = st.text_input("Topic", value=DEFAULT_TOPIC)
             loops = st.number_input("# Recursions", 1, 100, 10, step=1)
-            model_label = st.selectbox("Model", MODEL_CHOICES, index=0)
+
+            saved_model = load_saved_model()
+            model_index = MODEL_CHOICES.index(saved_model) if saved_model in MODEL_CHOICES else 0
+            model_label = st.selectbox("Model", MODEL_CHOICES, index=model_index)
 
             with st.expander("Advanced ⚙️"):
                 temperature = st.slider("Temperature", 0.0, 1.2, 0.8, 0.05)
@@ -267,7 +288,7 @@ def ui_main():
             run_label = "▶️ Resume Recursion" if st.session_state.paused else "🔁 Run Recursion"
             run_btn = st.form_submit_button(run_label)
             reset_btn = st.form_submit_button("🔄 Reset", type="secondary")
-
+            
         # ── Resume from .tmp upload ────────────────────────────────
         with st.expander("Resume from temp 📂"):
             uploaded_tmp = st.file_uploader("Drop a previously saved .tmp", type="tmp")
@@ -277,6 +298,13 @@ def ui_main():
             if "resume_raw" in st.session_state and st.button("❌ Clear loaded resume"):
                 del st.session_state["resume_raw"]
                 st.info("Cleared uploaded temp file.")
+        # ── Power controls ───────────────────────────────────────────
+        
+        with st.expander("Power ⚡"):
+            if st.button("🛑 Stop Streamlit Server"):
+                st.warning("Shutting down Streamlit…")
+                os.kill(os.getpid(), signal.SIGTERM)
+
 
     # ── Reset logic ────────────────────────────────────────────────
     if reset_btn:
@@ -300,7 +328,7 @@ def ui_main():
             st.toast(f"Resuming from upload: {len(prev_replies)} completed loops detected.")
 
         st.session_state.update(
-            running=True,
+            running=True,            
             paused=False,
             pause_requested=False,
             topic=topic,
@@ -312,6 +340,8 @@ def ui_main():
             history_pre=history_pre,
             start_index=start_index,
         )
+        save_model_preference(model_label)
+        
         _rerun()
 
     # ── Main run loop ──────────────────────────────────────────────
