@@ -83,6 +83,10 @@ def gen_prompt(topic: str, last_thought: str, loops_left: int) -> str:
 
         📌 Topic: {topic}
 
+        There are **{loops_left} recursive cycles remaining** before your output will be reviewed. 
+        Use this information to pace your reasoning: if few cycles remain, prioritize summarization and clear synthesis; 
+        if many cycles remain, expand and explore more freely.
+
         Evaluate whether your next recursive move should be **expansion** (to uncover new meaning)
         or **summarization** (to compress and stabilize current understanding).
 
