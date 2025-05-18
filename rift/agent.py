@@ -19,9 +19,9 @@ class Agent:
         self.db_path = workspace / self.config.get('database_path', 'state.db')
         self.conn = get_connection(self.db_path)
         self.workflow = yaml.safe_load((workspace / 'workflow.yaml').read_text())
-        self.task_handlers = self._load_handlers()
         self.request_log_path = self.workspace / 'requests' / 'handler_requests.md'
         self.request_log_path.parent.mkdir(parents=True, exist_ok=True)
+        self.task_handlers = self._load_handlers()
 
     def _load_handlers(self):
         import importlib
