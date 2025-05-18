@@ -1,4 +1,7 @@
 
+from dotenv import load_dotenv
+load_dotenv()
+
 """Placeholder Gemini API adapter."""
 import os
 

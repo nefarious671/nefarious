@@ -65,6 +65,9 @@ class Agent:
     def ingest_new_files(self):
         input_dir = self.workspace / 'input'
         processing_root = self.workspace / 'processing'
+        input_dir.mkdir(parents=True, exist_ok=True)
+        processing_root.mkdir(parents=True, exist_ok=True)
+
         for file in input_dir.iterdir():
             if file.is_file():
                 ts = datetime.datetime.utcnow().strftime('%Y%m%d_%H%M%S')
@@ -73,6 +76,7 @@ class Agent:
                 target = inst_dir / file.name
                 shutil.move(str(file), target)
                 self._insert_instance(file, inst_dir)
+
 
     def run(self):
         while True:
