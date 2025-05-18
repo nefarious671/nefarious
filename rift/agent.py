@@ -1,5 +1,5 @@
-
-"""AI Agent main loop (simplified skeleton)"""
+# agent.py
+"""AI Agent main loop (enhanced with self-upgrade awareness)"""
 import time
 import uuid
 import shutil
@@ -20,17 +20,29 @@ class Agent:
         self.conn = get_connection(self.db_path)
         self.workflow = yaml.safe_load((workspace / 'workflow.yaml').read_text())
         self.task_handlers = self._load_handlers()
+        self.request_log_path = self.workspace / 'requests' / 'handler_requests.md'
+        self.request_log_path.parent.mkdir(parents=True, exist_ok=True)
 
     def _load_handlers(self):
         import importlib
         handlers = {}
         handlers_pkg = 'task_handlers'
         for mod_name in ('summarise', 'transform', 'filesystem_move'):
-            module = importlib.import_module(f"{handlers_pkg}.{mod_name}")
-            handlers[module.TASK_TYPE] = module.handle
+            try:
+                module = importlib.import_module(f"{handlers_pkg}.{mod_name}")
+                handlers[module.TASK_TYPE] = module.handle
+            except Exception as e:
+                self._log_handler_request(mod_name, str(e))
         return handlers
 
-    # ------------------ DB helpers ------------------
+    def _log_handler_request(self, task_type, reason):
+        timestamp = datetime.datetime.utcnow().isoformat()
+        with self.request_log_path.open("a") as log:
+            log.write(f"### {timestamp} – Missing or failed handler load\n")
+            log.write(f"- Task Type: `{task_type}`\n")
+            log.write(f"- Reason: {reason}\n")
+            log.write(f"- Suggested Action: Develop handler module `task_handlers/{task_type}.py` implementing `TASK_TYPE` and `handle()`\n\n")
+
     def _insert_instance(self, src_file: Path, inst_dir: Path):
         instance_id = str(uuid.uuid4())
         now = datetime.datetime.utcnow().isoformat()
@@ -50,7 +62,6 @@ class Agent:
             )
         return instance_id
 
-    # ------------------ FS ingest ------------------
     def ingest_new_files(self):
         input_dir = self.workspace / 'input'
         processing_root = self.workspace / 'processing'
@@ -63,7 +74,6 @@ class Agent:
                 shutil.move(str(file), target)
                 self._insert_instance(file, inst_dir)
 
-    # ------------------ Main Loop ------------------
     def run(self):
         while True:
             self.ingest_new_files()
@@ -81,11 +91,11 @@ class Agent:
         instance_id = row['instance_id']
         step_index = row['step_index']
         if step_index >= len(self.workflow):
-            # already done?
             return
         step_cfg = self.workflow[step_index]
         handler = self.task_handlers.get(step_cfg['task_type'])
         if handler is None:
+            self._log_handler_request(step_cfg['task_type'], "No handler registered for this task type")
             self._mark_error(instance_id, f"No handler for {step_cfg['task_type']}")
             return
         input_path = self.workspace / row['input_path']
@@ -119,3 +129,4 @@ if __name__ == '__main__':
     workspace = Path(__file__).parent / 'workspace'
     agent = Agent(workspace)
     agent.run()
+
