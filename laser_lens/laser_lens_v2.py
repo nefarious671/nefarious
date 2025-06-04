@@ -114,7 +114,7 @@ def suggest_filename(topic: str) -> str:
 
 
 def parse_tmp(raw: str) -> Tuple[List[str], str]:
-    """Split a raw .tmp stream into finalised replies and the last incomplete chunk."""
+    """Split a raw .tmp stream into finalized replies and the last incomplete chunk."""
     chunks = [c.strip() for c in raw.split(CONFIG.delim) if c.strip()]
     return (chunks[:-1], chunks[-1]) if chunks else ([], "")
 
