@@ -1,5 +1,5 @@
 # agent.py
-"""AI Agent main loop (enhanced with self-upgrade awareness)"""
+"""AI Agent main loop"""
 import time
 import uuid
 import shutil
