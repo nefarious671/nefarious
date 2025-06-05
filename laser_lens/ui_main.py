@@ -12,7 +12,6 @@ from agent_state import AgentState
 from recursive_agent import RecursiveAgent
 
 from utils import suggest_filename, load_pref_model, save_pref_model
-from command_executor import CommandExecutor
 from handlers import WRITE_FILE, READ_FILE, LIST_OUTPUTS, DELETE_FILE
 
 
@@ -61,7 +60,6 @@ def build_markdown(history: list, topic: str) -> str:
 # Initialize singletons
 config = Config()
 logger = ErrorLogger(config)
-command_executor = CommandExecutor(logger)
 context_manager = ContextManager(config)
 output_manager = OutputManager(config, logger)
 agent_state = AgentState(config, logger)
