@@ -6,6 +6,11 @@ import time
 import tempfile
 from typing import Generator, Tuple, Any, Optional
 
+
+class CancelledException(Exception):
+    """Raised when the user requests cancellation."""
+    pass
+
 import google.generativeai as genai
 
 from config import Config
@@ -194,6 +199,10 @@ You are a “Laser Lens” recursive agent with the following capabilities:
                             chunks.append(text)
                     full_response = "".join(chunks)
                     break
+                except CancelledException:
+                    # Graceful cancellation by user
+                    self.agent_state.save_state()
+                    return
                 except Exception as e:
                     retry_count += 1
                     msg = f"Error on loop {self.current_loop}, attempt {retry_count}: {e}"
@@ -346,7 +355,7 @@ You are a “Laser Lens” recursive agent with the following capabilities:
             yield text
 
             if self.cancelled:
-                raise Exception("Cancelled by user")
+                raise CancelledException()
             if self.paused:
                 return
 

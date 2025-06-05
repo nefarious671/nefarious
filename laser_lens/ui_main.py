@@ -9,7 +9,7 @@ from command_executor import CommandExecutor
 from context_manager import ContextManager
 from output_manager import OutputManager
 from agent_state import AgentState
-from recursive_agent import RecursiveAgent
+from recursive_agent import RecursiveAgent, CancelledException
 
 from utils import (
     suggest_filename,
@@ -354,6 +354,8 @@ def run_stream():
         # After all loops finish, flush any leftover buffer
         flush_buffer_ui(final=True)
 
+    except CancelledException:
+        flush_buffer_ui(final=True)
     except Exception as e:
         logger.log("ERROR", "Unexpected exception in UI stream", e)
         logger.display_interactive(st.session_state.error_container, "Unexpected error", e)
