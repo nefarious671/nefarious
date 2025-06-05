@@ -105,26 +105,31 @@ if "seed" not in st.session_state:
 if "rpm" not in st.session_state:
     st.session_state.rpm = config.default_rpm
 
-# We'll keep track of uploaded files in session_state so start_agent() can process them:
+# Keep track of uploaded files in session_state so start_agent() can process them
 if "uploaded_files_list" not in st.session_state:
     st.session_state.uploaded_files_list = []
 
 
 # Sidebar: File uploader for context or resume (.md, .txt, .tmp)
 st.sidebar.header("Upload Context / Resume")
-# Each time the user selects files, we append them to session_state.uploaded_files_list
 uploaded_files = st.sidebar.file_uploader(
     "Upload .md, .txt or .tmp",
     type=["md", "txt", "tmp"],
     accept_multiple_files=True,
     key="file_uploader"
 )
+
 if uploaded_files:
     for uf in uploaded_files:
-        # Only add if we haven't seen this file name + size combo already
         marker = (uf.name, len(uf.getvalue()))
         if marker not in st.session_state.uploaded_files_list:
             st.session_state.uploaded_files_list.append(marker)
+            # Immediately call upload_context here:
+            try:
+                content = uf.getvalue()
+                context_manager.upload_context(uf.name, content)
+            except Exception as e:
+                logger.log("WARNING", f"Failed to upload {uf.name}", e)
 
 # Sidebar: Parameters in a form to avoid auto-refresh
 st.sidebar.markdown("---")
@@ -176,6 +181,45 @@ pause_btn = st.sidebar.button("⏸️ Pause")
 resume_btn = st.sidebar.button("▶️ Resume")
 stop_btn = st.sidebar.button("⏹️ Stop")
 
+# Sidebar: “Reset State” button
+st.sidebar.markdown("---")
+if st.sidebar.button("🔄 Reset State"):
+    # 1) Delete on‐disk state.json if it exists
+    state_path = os.path.expanduser(config.agent_state_dir + "/state.json")
+    try:
+        if os.path.isfile(state_path):
+            os.remove(state_path)
+    except Exception as e:
+        logger.log("WARNING", f"Failed to delete {state_path}", e)
+
+    # 2) Clear in‐memory AgentState
+    agent_state.delete_state("history")
+    agent_state.delete_state("last_thought")
+    agent_state.delete_state("current_loop")
+    agent_state.delete_state("paused")
+    agent_state.delete_state("cancelled")
+    # Also remove any tmp_path reference so next run starts fresh
+    agent_state.delete_state("tmp_path")
+    agent_state.save_state()
+
+    # 3) Clear any uploaded context in ContextManager
+    context_manager.clear_context()
+    # Also forget any file_upload markers so user can re‐upload
+    st.session_state.uploaded_files_list = []
+
+    # 4) Reset pagination/UI
+    st.session_state.pages = [""]
+    st.session_state.current_page = 0
+    if st.session_state.stream_placeholder is not None:
+        st.session_state.stream_placeholder.empty()
+
+    if st.session_state.progress_bar is not None:
+        st.session_state.progress_bar.progress(0.0)
+
+    if st.session_state.error_container is not None:
+        st.session_state.error_container.empty()
+    st.success("All agent state and uploaded context have been cleared.")
+
 # Pagination buttons
 prev_page_btn = st.sidebar.button("⬅️ Prev Page")
 next_page_btn = st.sidebar.button("Next Page ➡️")
@@ -194,32 +238,20 @@ if st.session_state.error_container is None:
 
 def start_agent() -> bool:
     """
-    Initialize a fresh agent, upload any files the user has selected,
-    and clear previous displays and state.
+    Initialize a fresh agent, clearing previous displays and state.
+    Any files already uploaded into `context_manager` will remain.
     """
-    # First, upload all files that were chosen in the sidebar
-    for (name, size) in st.session_state.uploaded_files_list:
-        try:
-            # Find the corresponding UploadedFile object in st.session_state["file_uploader"]
-            if uploaded_files:
-                for uf in uploaded_files:
-                    if uf.name == name and len(uf.getvalue()) == size:
-                        content = uf.getvalue()
-                        context_manager.upload_context(uf.name, content)
-                        break
-        except Exception as e:
-            logger.log("WARNING", f"Failed to upload {name}", e)
-
     # Save the chosen model so next time it’s the default
     chosen_model = models_available[st.session_state.model_idx]
     save_pref_model(chosen_model)
 
-    # Clear previous run state if any
+    # Clear previous run state if any (but keep context!)
     agent_state.delete_state("history")
     agent_state.delete_state("last_thought")
     agent_state.delete_state("current_loop")
     agent_state.delete_state("paused")
     agent_state.delete_state("cancelled")
+    agent_state.delete_state("tmp_path")
     agent_state.save_state()
 
     # Clear UI placeholders and pagination
@@ -229,7 +261,7 @@ def start_agent() -> bool:
     st.session_state.pages = [""]
     st.session_state.current_page = 0
 
-    # Instantiate agent with the real Gemini client
+    # Instantiate the agent (it will call get_context() under the hood)
     try:
         st.session_state.agent = RecursiveAgent(
             config=config,
