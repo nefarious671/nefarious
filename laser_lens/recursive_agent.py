@@ -221,7 +221,7 @@ class RecursiveAgent:
         """
         try:
             stream = self.client.generate_content(
-                prompt=prompt,
+                prompt,
                 stream=True,
                 temperature=self.temperature,
                 seed=self.seed,
