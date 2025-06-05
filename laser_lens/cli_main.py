@@ -53,8 +53,7 @@ def build_markdown(history: list, topic: str) -> str:
     lines = [f"# Recursive Analysis of {topic}\n"]
     for idx, entry in enumerate(history, start=1):
         lines.append(f"## Loop {idx} ({entry['timestamp']})\n")
-        lines.append(f"**Prompt:**\n```\n{entry['prompt']}\n```\n")
-        lines.append(f"**Response:**\n```\n{entry['response']}\n```\n")
+        lines.append(f"```\n{entry['response']}\n```\n")
     return "\n".join(lines)
 
 
