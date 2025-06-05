@@ -1,0 +1,62 @@
+--- a/ui_main.py
++++ b/ui_main.py
+@@ def run_stream():
+-    try:
+-        for event_type, loop_idx, _, payload in agent.run():
+-            if event_type == "chunk":
+-                # Display chunk text
+-                st.session_state.stream_placeholder.write(payload, unsafe_allow_html=True)
+-            elif event_type == "loop_end":
+-                frac = loop_idx / total_loops
+-                st.session_state.progress_bar.progress(frac)
+-            elif event_type == "error":
+-                message, exc = payload
+-                st.session_state.error_container.empty()
+-                logger.display_interactive(st.session_state.error_container, message, exc)
+-                return
+-    except Exception as e:
+-        logger.log("ERROR", "Unexpected exception in UI stream", e)
+-        logger.display_interactive(st.session_state.error_container, "Unexpected error", e)
+-        return
++    try:
++        buffer = ""
++        sentence_enders = {".", "?", "!"}
++
++        def flush_buffer_ui(final=False):
++            nonlocal buffer
++            if not buffer.strip():
++                return
++            # Overwrite the Streamlit placeholder with the current content
++            st.session_state.stream_placeholder.markdown(buffer)
++            if final:
++                st.session_state.stream_placeholder.markdown(buffer + "\n")
++            buffer = ""
++
++        for event_type, loop_idx, _, payload in agent.run():
++            if event_type == "chunk":
++                buffer += payload
++                # If buffer ends with a sentence-ender or is >200 chars, flush to the placeholder
++                if any(buffer.rstrip().endswith(p) for p in sentence_enders) or len(buffer) > 200:
++                    flush_buffer_ui()
++                # Note: we’re using markdown so newlines show up appropriately.
++
++            elif event_type == "loop_end":
++                # Flush at end of loop so user sees the last bits before updating progress bar
++                flush_buffer_ui(final=True)
++                frac = loop_idx / total_loops
++                st.session_state.progress_bar.progress(frac)
++
++            elif event_type == "error":
++                # Flush any partial buffer before showing the error
++                flush_buffer_ui(final=True)
++                message, exc = payload
++                st.session_state.error_container.empty()
++                logger.display_interactive(st.session_state.error_container, message, exc)
++                return
++
++        # After the loop finishes, flush anything left
++        flush_buffer_ui(final=True)
++    except Exception as e:
++        logger.log("ERROR", "Unexpected exception in UI stream", e)
++        logger.display_interactive(st.session_state.error_container, "Unexpected error", e)
++        return
