@@ -18,6 +18,9 @@ from utils import (
     build_markdown,
 )
 from command_executor import CommandExecutor
+
+from utils import suggest_filename, load_pref_model, save_pref_model
+
 from handlers import WRITE_FILE, READ_FILE, LIST_OUTPUTS, DELETE_FILE
 
 
@@ -50,7 +53,6 @@ def get_available_models() -> list[str]:
 # Initialize singletons
 config = Config()
 logger = ErrorLogger(config)
-command_executor = CommandExecutor(logger)
 context_manager = ContextManager(config)
 output_manager = OutputManager(config, logger)
 agent_state = AgentState(config, logger)
