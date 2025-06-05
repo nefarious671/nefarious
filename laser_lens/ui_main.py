@@ -162,14 +162,21 @@ def start_agent():
             rpm=rpm,
             api_key=os.getenv("GOOGLE_API_KEY"),
         )
+        return True
     except Exception as e:
-        st.session_state.error_container.error(f"Failed to initialize agent: {e}")
-        return
+        st.session_state.agent = None
+        st.session_state.error_container.error(
+            f"Failed to initialize agent: {e}"
+        )
+        return False
 
 
 def run_stream():
     """Run agent.run() and render streaming output, progress, and errors."""
     agent = st.session_state.agent
+    if agent is None:
+        st.session_state.error_container.error("Agent is not initialized")
+        return
     total_loops = agent.loops
 
     try:
@@ -205,8 +212,8 @@ def run_stream():
 
 # Button interactions
 if start_btn:
-    start_agent()
-    run_stream()
+    if start_agent():
+        run_stream()
 
 if pause_btn and st.session_state.agent:
     st.session_state.agent.request_pause()
