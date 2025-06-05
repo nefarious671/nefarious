@@ -32,11 +32,11 @@ def get_available_models() -> list[str]:
         from dotenv import load_dotenv
 
         load_dotenv()
-        genai_list.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+        genai_list.configure(api_key=os.getenv("GOOGLE_API_KEY"))  # type: ignore[attr-defined]
 
         models_available = [
             m.name
-            for m in genai_list.list_models()
+            for m in genai_list.list_models() # type: ignore[attr-defined]
             if "generateContent" in (m.supported_generation_methods or [])
         ]
         models_available = sorted(

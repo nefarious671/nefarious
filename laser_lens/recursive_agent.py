@@ -91,8 +91,8 @@ class RecursiveAgent:
 
         # Instantiate Gemini/GenAI client using the official SDK
         try:
-            genai.api_key = api_key  # FIXED: use api_key assignment, not configure()
-            self.client = genai.GenerativeModel(self.model_name) 
+            genai.api_key = api_key  # type: ignore[attr-defined]
+            self.client = genai.GenerativeModel(self.model_name)    # type: ignore[attr-defined]
         except Exception as e:
             self.error_logger.log(
                 "ERROR",
@@ -312,11 +312,11 @@ You are a “Laser Lens” recursive agent with the following capabilities:
                 text = chunk.text
             elif (
                 hasattr(chunk, "choices")
-                and isinstance(chunk.choices, list)
-                and len(chunk.choices) > 0
-                and hasattr(chunk.choices[0], "text")
+                and isinstance(chunk.choices, list)     # type: ignore[attr-defined]
+                and len(chunk.choices) > 0              # type: ignore[attr-defined]
+                and hasattr(chunk.choices[0], "text")   # type: ignore[attr-defined]
             ):
-                text = chunk.choices[0].text
+                text = chunk.choices[0].text            # type: ignore[attr-defined]
             else:
                 continue
 
