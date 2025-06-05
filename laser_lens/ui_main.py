@@ -204,23 +204,49 @@ def run_stream():
         return
     total_loops = agent.loops
 
+    buffer = ""
+    sentence_enders = {".", "?", "!"}
+
+    def flush_buffer_ui(final=False):
+        nonlocal buffer
+        if not buffer.strip():
+            return
+        # Replace the Streamlit placeholder with the buffered content
+        st.session_state.stream_placeholder.markdown(buffer)
+        if final:
+            st.session_state.stream_placeholder.markdown(buffer + "\n")
+        buffer = ""
+
     try:
         for event_type, loop_idx, _, payload in agent.run():
             if event_type == "chunk":
-                # Display chunk text
-                st.session_state.stream_placeholder.write(payload, unsafe_allow_html=True)
+                buffer += payload
+                # Flush when buffer ends in a sentence ender or is large
+                if any(buffer.rstrip().endswith(p) for p in sentence_enders) or len(buffer) > 200:
+                    flush_buffer_ui()
+
             elif event_type == "loop_end":
+                # Flush remaining buffer before updating progress
+                flush_buffer_ui(final=True)
                 frac = loop_idx / total_loops
                 st.session_state.progress_bar.progress(frac)
+
             elif event_type == "error":
+                # Flush remaining buffer before showing error
+                flush_buffer_ui(final=True)
                 message, exc = payload
                 st.session_state.error_container.empty()
                 logger.display_interactive(st.session_state.error_container, message, exc)
                 return
+
+        # After all loops finish, flush any leftover buffer
+        flush_buffer_ui(final=True)
+
     except Exception as e:
         logger.log("ERROR", "Unexpected exception in UI stream", e)
         logger.display_interactive(st.session_state.error_container, "Unexpected error", e)
         return
+
 
     # Completed all loops: build and save final Markdown
     history = agent_state.get_state("history") or []
