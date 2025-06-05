@@ -1,0 +1,18 @@
+{
+  "key1": "value1",
+  "tmp_path": "C:\\Users\\tbaza\\AppData\\Local\\Temp\\tmpsgovrm3p.tmp",
+  "history": [
+    {
+      "prompt": "You are a recursive agent analyzing: Test run\nLoop 1 of 2. Decide whether to expand on your previous thought or to summarize.\n",
+      "response": "This is chunk 1. This is chunk 2. This is chunk 3.",
+      "timestamp": "2025-06-05T04:40:55Z"
+    },
+    {
+      "prompt": "You are a recursive agent analyzing: Test run\nLoop 2 of 2. Decide whether to expand on your previous thought or to summarize.\nYour last thought:\nThis is chunk 1. This is chunk 2. This is chunk 3.\n\n",
+      "response": "This is chunk 1. This is chunk 2. This is chunk 3.",
+      "timestamp": "2025-06-05T04:40:58Z"
+    }
+  ],
+  "last_thought": "This is chunk 1. This is chunk 2. This is chunk 3.",
+  "current_loop": 3
+}
