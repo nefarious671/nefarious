@@ -55,7 +55,11 @@ def get_available_models() -> list[str]:
 # Initialize singletons
 config = Config()
 logger = ErrorLogger(config)
-context_manager = ContextManager(config)
+# Persist ContextManager across reruns so uploaded files aren't lost
+if "context_manager" not in st.session_state:
+    st.session_state.context_manager = ContextManager(config)
+context_manager = st.session_state.context_manager
+
 output_manager = OutputManager(config, logger)
 agent_state = AgentState(config, logger)
 
