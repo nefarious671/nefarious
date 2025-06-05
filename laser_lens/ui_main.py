@@ -17,16 +17,17 @@ from utils import (
     save_pref_model,
     build_markdown,
 )
-
 from handlers import WRITE_FILE, READ_FILE, LIST_OUTPUTS, DELETE_FILE
 
 # Approximate number of characters per page displayed
 PAGE_SIZE = 30000
 
 
-
-# Helper to fetch model list (same as in cli_main.py)
 def get_available_models() -> list[str]:
+    """
+    Attempt to list all Gemini models that support generateContent.
+    On failure, return a single default placeholder.
+    """
     try:
         import google.generativeai as genai_list
         from dotenv import load_dotenv
@@ -36,7 +37,7 @@ def get_available_models() -> list[str]:
 
         models_available = [
             m.name
-            for m in genai_list.list_models() # type: ignore[attr-defined]
+            for m in genai_list.list_models()  # type: ignore[attr-defined]
             if "generateContent" in (m.supported_generation_methods or [])
         ]
         models_available = sorted(
@@ -50,12 +51,15 @@ def get_available_models() -> list[str]:
 
     return models_available
 
+
 # Initialize singletons
 config = Config()
 logger = ErrorLogger(config)
 context_manager = ContextManager(config)
 output_manager = OutputManager(config, logger)
 agent_state = AgentState(config, logger)
+
+# Register command handlers
 ce = CommandExecutor(logger)
 ce.register_command("WRITE_FILE", WRITE_FILE)
 ce.register_command("READ_FILE", READ_FILE)
@@ -101,20 +105,26 @@ if "seed" not in st.session_state:
 if "rpm" not in st.session_state:
     st.session_state.rpm = config.default_rpm
 
+# We'll keep track of uploaded files in session_state so start_agent() can process them:
+if "uploaded_files_list" not in st.session_state:
+    st.session_state.uploaded_files_list = []
+
+
 # Sidebar: File uploader for context or resume (.md, .txt, .tmp)
 st.sidebar.header("Upload Context / Resume")
+# Each time the user selects files, we append them to session_state.uploaded_files_list
 uploaded_files = st.sidebar.file_uploader(
-    "Upload .md, .txt or .tmp", type=["md", "txt", "tmp"], accept_multiple_files=True
+    "Upload .md, .txt or .tmp",
+    type=["md", "txt", "tmp"],
+    accept_multiple_files=True,
+    key="file_uploader"
 )
 if uploaded_files:
     for uf in uploaded_files:
-        try:
-            # getvalue() returns the full bytes each rerun without
-            # consuming the underlying buffer
-            content = uf.getvalue()
-            context_manager.upload_context(uf.name, content)
-        except Exception as e:
-            logger.log("WARNING", f"Failed to upload {uf.name}", e)
+        # Only add if we haven't seen this file name + size combo already
+        marker = (uf.name, len(uf.getvalue()))
+        if marker not in st.session_state.uploaded_files_list:
+            st.session_state.uploaded_files_list.append(marker)
 
 # Sidebar: Parameters in a form to avoid auto-refresh
 st.sidebar.markdown("---")
@@ -182,13 +192,29 @@ if st.session_state.error_container is None:
     st.session_state.error_container = st.empty()
 
 
-def start_agent():
-    """Initialize a fresh agent and clear previous displays."""
+def start_agent() -> bool:
+    """
+    Initialize a fresh agent, upload any files the user has selected,
+    and clear previous displays and state.
+    """
+    # First, upload all files that were chosen in the sidebar
+    for (name, size) in st.session_state.uploaded_files_list:
+        try:
+            # Find the corresponding UploadedFile object in st.session_state["file_uploader"]
+            if uploaded_files:
+                for uf in uploaded_files:
+                    if uf.name == name and len(uf.getvalue()) == size:
+                        content = uf.getvalue()
+                        context_manager.upload_context(uf.name, content)
+                        break
+        except Exception as e:
+            logger.log("WARNING", f"Failed to upload {name}", e)
+
     # Save the chosen model so next time it’s the default
     chosen_model = models_available[st.session_state.model_idx]
     save_pref_model(chosen_model)
 
-    # Clear previous state if any
+    # Clear previous run state if any
     agent_state.delete_state("history")
     agent_state.delete_state("last_thought")
     agent_state.delete_state("current_loop")
@@ -196,6 +222,7 @@ def start_agent():
     agent_state.delete_state("cancelled")
     agent_state.save_state()
 
+    # Clear UI placeholders and pagination
     st.session_state.stream_placeholder.empty()
     st.session_state.progress_bar.progress(0.0)
     st.session_state.error_container.empty()
@@ -258,8 +285,10 @@ def run_stream():
                 st.session_state.pages.append("")
                 st.session_state.current_page = len(st.session_state.pages) - 1
                 remaining = PAGE_SIZE
-            st.session_state.pages[-1] += buffer[:remaining]
+            to_write = buffer[:remaining]
+            st.session_state.pages[-1] += to_write
             buffer = buffer[remaining:]
+        # Show the last page if it’s the current one or if final
         if st.session_state.current_page == len(st.session_state.pages) - 1 or final:
             show_current_page()
         buffer = ""
@@ -293,7 +322,6 @@ def run_stream():
         logger.log("ERROR", "Unexpected exception in UI stream", e)
         logger.display_interactive(st.session_state.error_container, "Unexpected error", e)
         return
-
 
     # Completed all loops: build and save final Markdown
     history = agent_state.get_state("history") or []
