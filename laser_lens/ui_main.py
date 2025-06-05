@@ -21,7 +21,7 @@ from utils import (
 from handlers import WRITE_FILE, READ_FILE, LIST_OUTPUTS, DELETE_FILE
 
 # Approximate number of characters per page displayed
-PAGE_SIZE = 2000
+PAGE_SIZE = 30000
 
 
 
