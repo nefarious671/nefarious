@@ -109,7 +109,9 @@ uploaded_files = st.sidebar.file_uploader(
 if uploaded_files:
     for uf in uploaded_files:
         try:
-            content = uf.read()
+            # getvalue() returns the full bytes each rerun without
+            # consuming the underlying buffer
+            content = uf.getvalue()
             context_manager.upload_context(uf.name, content)
         except Exception as e:
             logger.log("WARNING", f"Failed to upload {uf.name}", e)
