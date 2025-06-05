@@ -16,7 +16,7 @@ class Config:
     default_prompt_delim: str = "###"  # delimiter for parsing .tmp streams
 
     # Context parameters
-    max_context_tokens: int = 8000  # maximum tokens/characters allowed in combined context
+    max_context_tokens: int = 100000  # maximum tokens/characters allowed in combined context
 
     # Output directories
     safe_output_dir: str = "./outputs/"
