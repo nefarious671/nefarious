@@ -12,6 +12,10 @@ from agent_state import AgentState
 from recursive_agent import RecursiveAgent
 
 from utils import suggest_filename, load_pref_model, save_pref_model
+from command_executor import CommandExecutor
+from handlers import WRITE_FILE, READ_FILE, LIST_OUTPUTS, DELETE_FILE
+
+
 
 # Helper to fetch model list (same as in cli_main.py)
 def get_available_models() -> list[str]:
@@ -38,6 +42,22 @@ def get_available_models() -> list[str]:
 
     return models_available
 
+def build_markdown(history: list, topic: str) -> str:
+    """
+    Given history=[{"prompt":…, "response":…, "timestamp":…}, …],
+    format into a single Markdown string:
+      # Recursive Analysis of <topic>
+      ## Loop 1 (timestamp)
+      **Prompt:** …
+      **Response:** …
+      …
+    """
+    lines = [f"# Recursive Analysis of {topic}\n"]
+    for idx, entry in enumerate(history, start=1):
+        lines.append(f"## Loop {idx} ({entry['timestamp']})\n")
+        lines.append(f"**Prompt:**\n```\n{entry['prompt']}\n```\n")
+        lines.append(f"**Response:**\n```\n{entry['response']}\n```\n")
+    return "\n".join(lines)
 
 # Initialize singletons
 config = Config()
@@ -46,6 +66,11 @@ command_executor = CommandExecutor(logger)
 context_manager = ContextManager(config)
 output_manager = OutputManager(config, logger)
 agent_state = AgentState(config, logger)
+ce = CommandExecutor(logger)
+ce.register_command("WRITE_FILE", WRITE_FILE)
+ce.register_command("READ_FILE", READ_FILE)
+ce.register_command("LIST_OUTPUTS", LIST_OUTPUTS)
+ce.register_command("DELETE_FILE", DELETE_FILE)
 
 st.set_page_config(page_title="Laser Lens UI", layout="wide")
 
@@ -150,7 +175,7 @@ def start_agent():
         st.session_state.agent = RecursiveAgent(
             config=config,
             error_logger=logger,
-            command_executor=command_executor,
+            command_executor=ce,
             context_manager=context_manager,
             output_manager=output_manager,
             agent_state=agent_state,

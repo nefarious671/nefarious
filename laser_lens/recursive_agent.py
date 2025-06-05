@@ -101,6 +101,7 @@ class RecursiveAgent:
             )
             raise
 
+
     def run(self) -> Generator[Tuple[str, int, int, Any], None, None]:
         """
         Execute recursive loops. Yields:
@@ -186,21 +187,53 @@ class RecursiveAgent:
 
         self.agent_state.save_state()
 
-    def _build_prompt(self, context_str: str) -> str:
-        """
-        Assemble the prompt by concatenating:
-          1. Any uploaded context
-          2. Recursive instructions for this loop
-          3. The last thought, if present
-        """
-        header = f"You are a recursive agent analyzing: {self.topic}\n"
-        header += f"Loop {self.current_loop} of {self.loops}. "
-        header += "Decide whether to expand on your previous thought or to summarize.\n"
-        if self.last_thought:
-            header += f"Your last thought:\n{self.last_thought}\n\n"
-        if context_str:
-            header = context_str + "\n\n" + header
-        return header
+        def _build_prompt(self, context_str: str) -> str:
+            """
+            Assemble the prompt by concatenating:
+            1. A brief “system” section describing available tools and file formats
+            2. Any uploaded context
+            3. Recursive instructions for this loop
+            4. The last thought, if present
+            """
+            # 1) The “system” or “instruction” block:
+            tool_instructions = """\
+    You are a “Laser Lens” recursive agent with the following capabilities:
+    • When you embed text of the form [[COMMAND: <NAME> key="value" …]], 
+        the CLI/UI will invoke a Python function named <NAME>(…) with those arguments.
+        Your handler functions can perform file I/O, run shell commands, or anything
+        that our CommandExecutor supports, then return a result that will be visible 
+        to you in a subsequent loop.
+
+    • You can rely on “uploaded context” (Markdown or TXT files) or on a .tmp stream
+        (partial outputs from prior loops). Any previous “.tmp” chunks have already been
+        merged into the `context_str` below.
+
+    • After you stream your response each loop, your full text is stored in “history”
+        and available to you as your “last_thought” in the next loop.
+
+    • If you wish to halt the recursion early, emit “[[COMMAND: CANCEL]]” or “[[COMMAND: PAUSE]]”.
+        The surrounding code will interpret that and either stop or pause.
+
+    • At the end of all loops, the CLI/UI will assemble your prompts/responses into a 
+        Markdown summary and save it to disk.
+    """
+
+            # 2) Any uploaded context
+            if context_str:
+                combined = tool_instructions + "\n---\n" + context_str + "\n\n"
+            else:
+                combined = tool_instructions + "\n"
+
+            # 3) Recursive instructions for this loop
+            header = f"You are a recursive agent analyzing: {self.topic}\n"
+            header += f"Loop {self.current_loop} of {self.loops}. "
+            header += "Decide whether to expand on your previous thought or to summarize.\n"
+
+            # 4) Include last_thought if present
+            if self.last_thought:
+                header += f"Your last thought:\n{self.last_thought}\n\n"
+
+            return combined + header
 
     def _enforce_rate_limit(self) -> None:
         """
@@ -223,8 +256,6 @@ class RecursiveAgent:
             stream = self.client.generate_content(
                 prompt,
                 stream=True,
-                temperature=self.temperature,
-                seed=self.seed,
             )
         except Exception as e:
             raise
