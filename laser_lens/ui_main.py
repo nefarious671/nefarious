@@ -17,11 +17,11 @@ from utils import (
     save_pref_model,
     build_markdown,
 )
-from command_executor import CommandExecutor
-
-from utils import suggest_filename, load_pref_model, save_pref_model
 
 from handlers import WRITE_FILE, READ_FILE, LIST_OUTPUTS, DELETE_FILE
+
+# Approximate number of characters per page displayed
+PAGE_SIZE = 2000
 
 
 
@@ -86,6 +86,10 @@ if "model_idx" not in st.session_state:
     st.session_state.model_idx = default_index
 if "model_name" not in st.session_state:
     st.session_state.model_name = models_available[default_index]
+if "pages" not in st.session_state:
+    st.session_state.pages = [""]
+if "current_page" not in st.session_state:
+    st.session_state.current_page = 0
 
 # Sidebar: File uploader for context or resume (.md, .txt, .tmp)
 st.sidebar.header("Upload Context / Resume")
@@ -133,6 +137,13 @@ pause_btn = st.sidebar.button("⏸️ Pause")
 resume_btn = st.sidebar.button("▶️ Resume")
 stop_btn = st.sidebar.button("⏹️ Stop")
 
+# Pagination buttons
+prev_page_btn = st.sidebar.button("⬅️ Prev Page")
+next_page_btn = st.sidebar.button("Next Page ➡️")
+st.sidebar.markdown(
+    f"Page {st.session_state.current_page + 1} / {len(st.session_state.pages)}"
+)
+
 # Main area placeholders
 if st.session_state.stream_placeholder is None:
     st.session_state.stream_placeholder = st.empty()
@@ -159,6 +170,8 @@ def start_agent():
     st.session_state.stream_placeholder.empty()
     st.session_state.progress_bar.progress(0.0)
     st.session_state.error_container.empty()
+    st.session_state.pages = [""]
+    st.session_state.current_page = 0
 
     # Instantiate agent with the real Gemini client
     try:
@@ -186,6 +199,14 @@ def start_agent():
         return False
 
 
+def show_current_page() -> None:
+    """Render the currently selected page in the main placeholder."""
+    if st.session_state.pages:
+        idx = st.session_state.current_page
+        content = st.session_state.pages[idx]
+        st.session_state.stream_placeholder.markdown(content)
+
+
 def run_stream():
     """Run agent.run() and render streaming output, progress, and errors."""
     agent = st.session_state.agent
@@ -197,14 +218,21 @@ def run_stream():
     buffer = ""
     sentence_enders = {".", "?", "!"}
 
-    def flush_buffer_ui(final=False):
+    def flush_buffer_ui(final: bool = False) -> None:
+        """Append buffered text to pages and update display."""
         nonlocal buffer
         if not buffer.strip():
             return
-        # Replace the Streamlit placeholder with the buffered content
-        st.session_state.stream_placeholder.markdown(buffer)
-        if final:
-            st.session_state.stream_placeholder.markdown(buffer + "\n")
+        while buffer:
+            remaining = PAGE_SIZE - len(st.session_state.pages[-1])
+            if remaining <= 0:
+                st.session_state.pages.append("")
+                st.session_state.current_page = len(st.session_state.pages) - 1
+                remaining = PAGE_SIZE
+            st.session_state.pages[-1] += buffer[:remaining]
+            buffer = buffer[remaining:]
+        if st.session_state.current_page == len(st.session_state.pages) - 1 or final:
+            show_current_page()
         buffer = ""
 
     try:
@@ -265,3 +293,11 @@ if resume_btn and st.session_state.agent:
 
 if stop_btn and st.session_state.agent:
     st.session_state.agent.request_cancel()
+
+if prev_page_btn and st.session_state.current_page > 0:
+    st.session_state.current_page -= 1
+    show_current_page()
+
+if next_page_btn and st.session_state.current_page < len(st.session_state.pages) - 1:
+    st.session_state.current_page += 1
+    show_current_page()
