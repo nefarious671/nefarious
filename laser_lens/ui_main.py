@@ -104,8 +104,7 @@ selected_model = st.sidebar.selectbox(
     index=st.session_state.model_idx,
     key="model_name"
 )
-st.session_state.model_name = selected_model
-model_idx = models_available.index(selected_model)
+model_idx = models_available.index(st.session_state.model_name)
 st.session_state.model_idx = model_idx
 
 temperature = st.sidebar.slider("Temperature", 0.0, 1.0, value=config.default_temperature)
