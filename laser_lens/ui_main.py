@@ -93,7 +93,7 @@ topic = st.sidebar.text_input("Topic", value=st.session_state.topic)
 st.session_state.topic = topic
 
 loops = st.sidebar.slider(
-    "Recursion Loops", min_value=1, max_value=10, value=st.session_state.loops
+    "Recursion Loops", min_value=1, max_value=500, value=st.session_state.loops
 )
 st.session_state.loops = loops
 
