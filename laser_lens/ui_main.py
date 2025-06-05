@@ -64,10 +64,18 @@ ce.register_command("DELETE_FILE", DELETE_FILE)
 
 st.set_page_config(page_title="Laser Lens UI", layout="wide")
 
-# Load dynamic model list and default index
-models_available = get_available_models()
-saved_model = load_pref_model(models_available)
-default_index = models_available.index(saved_model) if saved_model in models_available else 0
+# Load dynamic model list once per session
+if "models_available" not in st.session_state:
+    st.session_state.models_available = get_available_models()
+models_available = st.session_state.models_available
+
+if "model_name" not in st.session_state:
+    saved_model = load_pref_model(models_available)
+    st.session_state.model_name = (
+        saved_model if saved_model in models_available else models_available[0]
+    )
+if "model_idx" not in st.session_state:
+    st.session_state.model_idx = models_available.index(st.session_state.model_name)
 
 # SESSION STATE KEYS
 if "agent" not in st.session_state:
@@ -82,14 +90,16 @@ if "topic" not in st.session_state:
     st.session_state.topic = ""
 if "loops" not in st.session_state:
     st.session_state.loops = config.default_loops
-if "model_idx" not in st.session_state:
-    st.session_state.model_idx = default_index
-if "model_name" not in st.session_state:
-    st.session_state.model_name = models_available[default_index]
 if "pages" not in st.session_state:
     st.session_state.pages = [""]
 if "current_page" not in st.session_state:
     st.session_state.current_page = 0
+if "temperature" not in st.session_state:
+    st.session_state.temperature = config.default_temperature
+if "seed" not in st.session_state:
+    st.session_state.seed = config.default_seed or 0
+if "rpm" not in st.session_state:
+    st.session_state.rpm = config.default_rpm
 
 # Sidebar: File uploader for context or resume (.md, .txt, .tmp)
 st.sidebar.header("Upload Context / Resume")
@@ -104,31 +114,48 @@ if uploaded_files:
         except Exception as e:
             logger.log("WARNING", f"Failed to upload {uf.name}", e)
 
-# Sidebar: Parameters
+# Sidebar: Parameters in a form to avoid auto-refresh
 st.sidebar.markdown("---")
-st.sidebar.header("Agent Settings")
+with st.sidebar.form("agent_settings"):
+    st.header("Agent Settings")
+    topic_in = st.text_input("Topic", value=st.session_state.topic)
+    loops_in = st.slider(
+        "Recursion Loops", min_value=1, max_value=500, value=st.session_state.loops
+    )
+    st.selectbox(
+        "Model",
+        models_available,
+        index=models_available.index(st.session_state.model_name),
+        key="model_name",
+    )
+    temp_in = st.slider(
+        "Temperature", 0.0, 1.0, value=st.session_state.temperature
+    )
+    seed_in = st.number_input(
+        "Seed (optional)",
+        min_value=0,
+        max_value=2**32 - 1,
+        value=st.session_state.seed,
+    )
+    rpm_in = st.number_input(
+        "Requests/minute", min_value=1, max_value=100, value=st.session_state.rpm
+    )
+    apply_btn = st.form_submit_button("Apply")
 
-topic = st.sidebar.text_input("Topic", value=st.session_state.topic)
-st.session_state.topic = topic
+if apply_btn:
+    st.session_state.topic = topic_in
+    st.session_state.loops = loops_in
+    st.session_state.temperature = temp_in
+    st.session_state.seed = seed_in
+    st.session_state.rpm = rpm_in
+    st.session_state.model_idx = models_available.index(st.session_state.model_name)
 
-loops = st.sidebar.slider(
-    "Recursion Loops", min_value=1, max_value=500, value=st.session_state.loops
-)
-st.session_state.loops = loops
-
-# Dynamic Model Selection
-selected_model = st.sidebar.selectbox(
-    "Model",
-    models_available,
-    index=st.session_state.model_idx,
-    key="model_name"
-)
-model_idx = models_available.index(st.session_state.model_name)
-st.session_state.model_idx = model_idx
-
-temperature = st.sidebar.slider("Temperature", 0.0, 1.0, value=config.default_temperature)
-seed = st.sidebar.number_input("Seed (optional)", min_value=0, max_value=2**32 - 1, value=0)
-rpm = st.sidebar.number_input("Requests/minute", min_value=1, max_value=100, value=config.default_rpm)
+# Keep model_idx consistent with model_name on every run
+if st.session_state.model_name in models_available:
+    st.session_state.model_idx = models_available.index(st.session_state.model_name)
+else:
+    st.session_state.model_name = models_available[0]
+    st.session_state.model_idx = 0
 
 # Sidebar: Control Buttons
 st.sidebar.markdown("---")
@@ -183,11 +210,11 @@ def start_agent():
             output_manager=output_manager,
             agent_state=agent_state,
             model_name=models_available[st.session_state.model_idx],
-            topic=topic,
-            loops=loops,
-            temperature=temperature,
-            seed=seed or None,
-            rpm=rpm,
+            topic=st.session_state.topic,
+            loops=st.session_state.loops,
+            temperature=st.session_state.temperature,
+            seed=st.session_state.seed or None,
+            rpm=st.session_state.rpm,
             api_key=os.getenv("GOOGLE_API_KEY"),
         )
         return True
@@ -268,8 +295,8 @@ def run_stream():
 
     # Completed all loops: build and save final Markdown
     history = agent_state.get_state("history") or []
-    md_content = build_markdown(history, topic)
-    filename = suggest_filename(topic)
+    md_content = build_markdown(history, st.session_state.topic)
+    filename = suggest_filename(st.session_state.topic)
     try:
         saved = output_manager.save_output(filename, md_content)
         st.success(f"Final Markdown saved to {saved}")
