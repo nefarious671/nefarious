@@ -6,9 +6,7 @@ import time
 import tempfile
 from typing import Generator, Tuple, Any, Optional
 
-import google.generativeai as genai  # Your Gemini/GenAI SDK
-# Note: We no longer import GoogleAPIError directly, as it may not exist.
-# We'll catch generic Exception during streaming and treat it as retryable.
+import google.generativeai as genai
 
 from config import Config
 from error_logger import ErrorLogger
@@ -93,8 +91,8 @@ class RecursiveAgent:
 
         # Instantiate Gemini/GenAI client using the official SDK
         try:
-            genai.configure(api_key=api_key)
-            self.client = genai.GenerativeModel(self.model_name)
+            genai.api_key = api_key  # FIXED: use api_key assignment, not configure()
+            self.client = genai.GenerativeModel(self.model_name) 
         except Exception as e:
             self.error_logger.log(
                 "ERROR",
@@ -131,10 +129,14 @@ class RecursiveAgent:
             while retry_count <= self.config.max_retries:
                 try:
                     # Stream-and-collect the full response
-                    full_response = yield from self._stream_generation(prompt)
+                    chunks = []
+                    for text in self._stream_generation(prompt):
+                        if text and text.strip():
+                            yield ("chunk", self.current_loop, total_loops, text)
+                            chunks.append(text)
+                    full_response = "".join(chunks)
                     break
                 except Exception as e:
-                    # Treat ANY exception as retryable (you can refine this if you know specific exception classes)
                     retry_count += 1
                     msg = f"Error on loop {self.current_loop}, attempt {retry_count}: {e}"
                     self.error_logger.log("WARNING", msg, e)
@@ -180,10 +182,8 @@ class RecursiveAgent:
             self.agent_state.save_state()
 
             if self.paused:
-                # Pause after this loop; resume can continue
                 break
 
-        # Final save after loops complete, pause, or cancel
         self.agent_state.save_state()
 
     def _build_prompt(self, context_str: str) -> str:
@@ -212,11 +212,11 @@ class RecursiveAgent:
             time.sleep(interval - elapsed)
         self._last_request_ts = time.time()
 
-    def _stream_generation(self, prompt: str) -> Generator[str, None, str]:
+    def _stream_generation(self, prompt: str) -> Generator[str, None, None]:
         """
         Call Gemini’s streaming endpoint: for each chunk:
           - If chunk.text is empty or whitespace, skip.
-          - Otherwise write to .tmp, yield ("chunk", …, text).
+          - Otherwise write to .tmp, yield text.
         After streaming ends, return the concatenated full_response string.
         """
         try:
@@ -227,12 +227,9 @@ class RecursiveAgent:
                 seed=self.seed,
             )
         except Exception as e:
-            # Treat any initiation error as retryable
             raise
 
-        buffer = io.StringIO()
         for chunk in stream:
-            # Extract text from the chunk
             if hasattr(chunk, "text"):
                 text = chunk.text
             elif (
@@ -243,13 +240,11 @@ class RecursiveAgent:
             ):
                 text = chunk.choices[0].text
             else:
-                # No recognizable text, skip
                 continue
 
             if not text or not text.strip():
-                continue  # skip empty or whitespace‐only chunks
+                continue
 
-            # Write to temp file for resume
             try:
                 self.tmp_file.write(text)
                 self.tmp_file.flush()
@@ -260,17 +255,12 @@ class RecursiveAgent:
                     e
                 )
 
-            buffer.write(text)
-            yield ("chunk", self.current_loop, self.loops, text)
+            yield text
 
-            # Check for cancel/pause mid‐stream
             if self.cancelled:
                 raise Exception("Cancelled by user")
             if self.paused:
-                return buffer.getvalue().strip()
-
-        full = buffer.getvalue().strip()
-        return full
+                return
 
     def request_cancel(self) -> None:
         """
