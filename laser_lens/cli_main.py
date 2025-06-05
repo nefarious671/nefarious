@@ -12,7 +12,12 @@ from output_manager import OutputManager
 from agent_state import AgentState
 from recursive_agent import RecursiveAgent
 
-from utils import suggest_filename, load_pref_model, save_pref_model
+from utils import (
+    suggest_filename,
+    load_pref_model,
+    save_pref_model,
+    build_markdown,
+)
 
 def get_available_models() -> list[str]:
     """
@@ -43,18 +48,6 @@ def get_available_models() -> list[str]:
         models_available = ["models/gemini-2.0-pro"]
 
     return models_available
-
-
-def build_markdown(history: list, topic: str) -> str:
-    """
-    Given history=[{"prompt":…, "response":…, "timestamp":…}, …],
-    format into a single Markdown string.
-    """
-    lines = [f"# Recursive Analysis of {topic}\n"]
-    for idx, entry in enumerate(history, start=1):
-        lines.append(f"## Loop {idx} ({entry['timestamp']})\n")
-        lines.append(f"```\n{entry['response']}\n```\n")
-    return "\n".join(lines)
 
 
 def main():
