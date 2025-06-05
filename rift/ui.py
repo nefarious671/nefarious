@@ -20,9 +20,21 @@ conn = get_connection(DB_PATH)
 st.set_page_config(page_title='AI Agent Control UI', layout='wide')
 
 st.sidebar.title('Instances')
-status_filters = st.sidebar.multiselect('Filter status', ['pending','processing','paused','error','done'], default=['pending','processing','error'])
-query = f"SELECT * FROM instances WHERE status IN ({','.join(['?']*len(status_filters))}) ORDER BY created_at DESC"
-df = pd.read_sql_query(query, conn, params=status_filters)
+status_filters = st.sidebar.multiselect(
+    'Filter status',
+    ['pending', 'processing', 'paused', 'error', 'done'],
+    default=['pending', 'processing', 'error'],
+)
+
+if status_filters:
+    placeholders = ','.join(['?'] * len(status_filters))
+    query = (
+        f"SELECT * FROM instances WHERE status IN ({placeholders})"
+        " ORDER BY created_at DESC"
+    )
+    df = pd.read_sql_query(query, conn, params=status_filters)
+else:
+    df = pd.DataFrame(columns=['instance_id', 'status', 'created_at'])
 
 st.sidebar.write(df[['instance_id','status','created_at']])
 

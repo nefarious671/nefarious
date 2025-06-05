@@ -1,5 +1,5 @@
 # agent.py
-"""AI Agent main loop (enhanced with self-upgrade awareness)"""
+"""AI Agent main loop"""
 import time
 import uuid
 import shutil
@@ -105,16 +105,19 @@ class Agent:
         input_path = self.workspace / row['input_path']
         success, output_path, error_message = handler(input_path, step_cfg, self.workspace)
         if success:
+            new_output_path = str(output_path.relative_to(self.workspace)) if output_path else row['output_path']
+            new_input_path = str(output_path.relative_to(self.workspace)) if output_path else row['input_path']
             with self.conn:
                 next_index = step_index + 1
                 status = 'done' if next_index >= len(self.workflow) else 'pending'
                 self.conn.execute(
-                    "UPDATE instances SET step_index = ?, status = ?, updated_at = ?, output_path = ? WHERE instance_id = ?",
+                    "UPDATE instances SET step_index = ?, status = ?, updated_at = ?, output_path = ?, input_path = ? WHERE instance_id = ?",
                     (
                         next_index,
                         status,
                         datetime.datetime.utcnow().isoformat(),
-                        str(output_path.relative_to(self.workspace)) if output_path else row['output_path'],
+                        new_output_path,
+                        new_input_path,
                         instance_id,
                     ),
                 )
