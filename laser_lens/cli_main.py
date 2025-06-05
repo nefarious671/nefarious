@@ -106,7 +106,7 @@ def main():
     config = Config()
     logger = ErrorLogger(config)
     ce = CommandExecutor(logger)
-    cm = ContextManager(config)
+    cm = ContextManager(config, logger)
     om = OutputManager(config, logger)
     as_state = AgentState(config, logger)
 

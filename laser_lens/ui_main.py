@@ -57,7 +57,7 @@ config = Config()
 logger = ErrorLogger(config)
 # Persist ContextManager across reruns so uploaded files aren't lost
 if "context_manager" not in st.session_state:
-    st.session_state.context_manager = ContextManager(config)
+    st.session_state.context_manager = ContextManager(config, logger)
 context_manager = st.session_state.context_manager
 
 output_manager = OutputManager(config, logger)
