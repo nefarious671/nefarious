@@ -146,8 +146,13 @@ You are a “Laser Lens” recursive agent with the following capabilities:
         # 4) Include last_thought if present
         if self.last_thought:
             header += f"Your last thought:\n{self.last_thought}\n\n"
-
-        return combined + header
+        prompt = combined + header
+        if self.error_logger:
+            self.error_logger.log(
+                "DEBUG",
+                f"prompt length {len(prompt)} chars"
+            )
+        return prompt
 
     def run(self) -> Generator[Tuple[str, int, int, Any], None, None]:
         """
@@ -164,6 +169,11 @@ You are a “Laser Lens” recursive agent with the following capabilities:
 
             # Build prompt with any uploaded context
             context_str = self.context_manager.get_context()
+            if self.error_logger:
+                self.error_logger.log(
+                    "DEBUG",
+                    f"loop {self.current_loop}: context length {len(context_str)}"
+                )
             prompt = self._build_prompt(context_str)
 
             # Enforce rate limiting
