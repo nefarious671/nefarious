@@ -91,16 +91,16 @@ class RecursiveAgent:
         # Rate limiting state
         self._last_request_ts = 0.0
 
-        # Instantiate real Gemini/GenAI client
+        # Instantiate Gemini/GenAI client using the official SDK
         try:
-            self.client = genai.Client(
-                model=self.model_name,
-                temperature=self.temperature,
-                seed=self.seed,
-                api_key=api_key  # ensure environment or pass explicitly
-            )
+            genai.configure(api_key=api_key)
+            self.client = genai.GenerativeModel(self.model_name)
         except Exception as e:
-            self.error_logger.log("ERROR", "Failed to initialize Gemini/GenAI client", e)
+            self.error_logger.log(
+                "ERROR",
+                "Failed to initialize Gemini/GenAI client",
+                e,
+            )
             raise
 
     def run(self) -> Generator[Tuple[str, int, int, Any], None, None]:
@@ -220,7 +220,12 @@ class RecursiveAgent:
         After streaming ends, return the concatenated full_response string.
         """
         try:
-            stream = self.client.generate_content(prompt=prompt, stream=True)
+            stream = self.client.generate_content(
+                prompt=prompt,
+                stream=True,
+                temperature=self.temperature,
+                seed=self.seed,
+            )
         except Exception as e:
             # Treat any initiation error as retryable
             raise
