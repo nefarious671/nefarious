@@ -69,6 +69,8 @@ if "loops" not in st.session_state:
     st.session_state.loops = config.default_loops
 if "model_idx" not in st.session_state:
     st.session_state.model_idx = default_index
+if "model_name" not in st.session_state:
+    st.session_state.model_name = models_available[default_index]
 
 # Sidebar: File uploader for context or resume (.md, .txt, .tmp)
 st.sidebar.header("Upload Context / Resume")
@@ -96,12 +98,15 @@ loops = st.sidebar.slider(
 st.session_state.loops = loops
 
 # Dynamic Model Selection
-model_idx = st.sidebar.selectbox(
+selected_model = st.sidebar.selectbox(
     "Model",
     models_available,
     index=st.session_state.model_idx,
-    key="model_idx"
+    key="model_name"
 )
+st.session_state.model_name = selected_model
+model_idx = models_available.index(selected_model)
+st.session_state.model_idx = model_idx
 
 temperature = st.sidebar.slider("Temperature", 0.0, 1.0, value=config.default_temperature)
 seed = st.sidebar.number_input("Seed (optional)", min_value=0, max_value=2**32 - 1, value=0)
