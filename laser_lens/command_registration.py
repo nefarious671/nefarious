@@ -1,6 +1,7 @@
 from command_executor import CommandExecutor
 from handlers import (
     WRITE_FILE,
+    APPEND_FILE,
     READ_FILE,
     READ_LINES,
     LIST_OUTPUTS,
@@ -19,6 +20,7 @@ except ImportError:  # pragma: no cover
 def register_core_commands(ce: CommandExecutor) -> None:
     """Register built-in handlers and their aliases."""
     ce.register_command("WRITE_FILE", WRITE_FILE)
+    ce.register_command("APPEND_FILE", APPEND_FILE)
     ce.register_command("READ_FILE", READ_FILE)
     ce.register_command("READ_LINES", READ_LINES)
     ce.register_command("LIST_OUTPUTS", LIST_OUTPUTS)

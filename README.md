@@ -36,12 +36,15 @@ Large uploads are truncated automatically if they would exceed the agent's
 context window. The first and last portions are kept with a `[truncated]`
 marker so oversized files still contribute useful context.
 The complete content is saved to `outputs/full_<name>` for later retrieval.
+When `READ_FILE` truncates output to the first 10 lines it will prefix a
+`WARNING:` message showing the original line count.
 
 ## Available Commands
 
 | Command        | Description                               |
 | -------------- | ----------------------------------------- |
 | WRITE_FILE     | Save content to the outputs directory.    |
+| APPEND_FILE    | Append text to an existing file.          |
 | READ_FILE      | Read a file from outputs.                 |
 | READ_LINES     | Read specific line range from a file.     |
 | LIST_OUTPUTS   | List files under outputs/.                |

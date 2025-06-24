@@ -39,6 +39,7 @@ class CommandExecutor:
                 self.error_logger.log(
                     "WARNING", f"Failed to parse args for command {name}: {e}"
                 )
+                results.append((name, f"ERROR: {e}"))
                 continue
 
             if name not in self._registry:
@@ -55,6 +56,7 @@ class CommandExecutor:
                 self.error_logger.log(
                     "ERROR", f"Error executing handler for command {name}", e
                 )
+                results.append((name, f"ERROR: {e}"))
         return results
 
     def _parse_args(self, raw: str) -> Dict[str, Any]:

@@ -35,6 +35,27 @@ def WRITE_FILE(args: Dict[str, Any]) -> str:
         return f"ERROR: Could not write file {fname}: {e}"
 
 
+def APPEND_FILE(args: Dict[str, Any]) -> str:
+    """Append content to an existing file in the outputs directory."""
+    fname = args.get("filename")
+    content = args.get("content", "")
+    if not fname:
+        return "ERROR: Missing required argument 'filename'."
+
+    safe_name = _output_mgr.sanitize_filename(fname)
+    path = os.path.join(os.path.expanduser(_cfg.safe_output_dir), safe_name)
+    if not os.path.isfile(path):
+        return f"ERROR: File {safe_name} does not exist."
+
+    try:
+        with open(path, "a", encoding="utf-8", newline="") as f:
+            f.write(content)
+        return f"Appended {len(content)} chars to {safe_name}"
+    except Exception as e:
+        _logger.log("ERROR", f"Failed to APPEND_FILE {safe_name}", e)
+        return f"ERROR: Could not append to file {safe_name}: {e}"
+
+
 def READ_FILE(args: Dict[str, Any]) -> str:
     """
     Usage:
@@ -53,9 +74,14 @@ def READ_FILE(args: Dict[str, Any]) -> str:
     try:
         with open(path, "r", encoding="utf-8") as f:
             lines = f.readlines()
-        # Return up to first 10 lines (or entire file if shorter)
-        snippet = "".join(lines[:10])
-        return f"CONTENT_START\n{snippet}\nCONTENT_END"
+        orig_len = len(lines)
+        snippet_lines = lines[:10]
+        snippet = "".join(snippet_lines)
+        if orig_len > len(snippet_lines):
+            warning = f"WARNING: truncated from {orig_len} lines to {len(snippet_lines)} lines\n"
+        else:
+            warning = ""
+        return f"{warning}CONTENT_START\n{snippet}\nCONTENT_END"
     except Exception as e:
         _logger.log("ERROR", f"Failed to READ_FILE {safe_name}", e)
         return f"ERROR: Could not read file {safe_name}: {e}"
@@ -183,6 +209,7 @@ def HELP(args: Dict[str, Any]) -> str:
 
     cmds = [
         "WRITE_FILE",
+        "APPEND_FILE",
         "READ_FILE",
         "READ_LINES",
         "LIST_OUTPUTS",

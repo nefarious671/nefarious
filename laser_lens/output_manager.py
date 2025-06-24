@@ -47,7 +47,7 @@ class OutputManager:
         safe_name = self.sanitize_filename(filename)
         full_path = os.path.join(self.safe_dir, safe_name)
         try:
-            with open(full_path, "w", encoding="utf-8") as f:
+            with open(full_path, "w", encoding="utf-8", newline="") as f:
                 f.write(content)
             return full_path
         except OSError as e:
@@ -60,7 +60,7 @@ class OutputManager:
             fallback_name = f"output_{int(time.time())}.md"
             fallback_path = os.path.join(self.safe_dir, fallback_name)
             try:
-                with open(fallback_path, "w", encoding="utf-8") as f:
+                with open(fallback_path, "w", encoding="utf-8", newline="") as f:
                     f.write(content)
                 return fallback_path
             except Exception as e2:
