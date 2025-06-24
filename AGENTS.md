@@ -14,6 +14,21 @@
 
 Last feedback synced: 2025-06-24 17:19 UTC
 
+### Phase Status
+
+| Phase | Status |
+| ----- | ------ |
+| 0 – Project Setup | ✅ Completed |
+| 1 – Agent Reasoning Core | ✅ Completed |
+| 2 – Command Framework Expansion | ✅ Completed |
+| 3 – Streamlit UX | ✅ Completed |
+| 4 – Hardening & Tests | ✅ Completed |
+| 5 – Optional Enhancements | ✅ Completed |
+| 6 – Context Overflow Handling | ✅ Completed |
+| 7 – OS Awareness & Chunked Reading | ✅ Completed |
+| 8 – File I/O Refinements | ✅ Completed |
+| 9 – Transparency & Dry Run | ☐ In Progress |
+
 ---
 
 ## 📋 Prerequisites
