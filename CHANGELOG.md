@@ -55,3 +55,4 @@
 - Ready for Gemini testing review and new feature requests.
 - Added `CANCEL` and `PAUSE` commands requiring a reason and updated UI with
   collapsible loop expanders, copy buttons, and a sidebar message box.
+- Fixed Unicode surrogate pair in copy button to avoid encoding error (phase 9).
