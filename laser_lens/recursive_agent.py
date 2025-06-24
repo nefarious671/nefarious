@@ -9,7 +9,9 @@ from typing import Generator, Tuple, Any, Optional
 
 class CancelledException(Exception):
     """Raised when the user requests cancellation."""
+
     pass
+
 
 import google.generativeai as genai
 
@@ -70,7 +72,7 @@ class RecursiveAgent:
         self.cancelled = False
         self.paused = agent_state.get_state("paused") or False
 
-        # Prepare or resume a NamedTemporaryFile for streaming
+        # Prepare or resume a NamedTemporaryFile for streaming (.md for easier viewing)
         tmp_path = agent_state.get_state("tmp_path")
         if tmp_path and os.path.isfile(tmp_path):
             try:
@@ -79,14 +81,18 @@ class RecursiveAgent:
                 self.error_logger.log(
                     "WARNING",
                     f"Failed to reopen existing tmp file ({tmp_path}); creating new one",
-                    e
+                    e,
                 )
-                tmp = tempfile.NamedTemporaryFile(delete=False, mode="w+", encoding="utf-8", suffix=".tmp")
+                tmp = tempfile.NamedTemporaryFile(
+                    delete=False, mode="w+", encoding="utf-8", suffix=".md"
+                )
                 self.tmp_file = tmp
                 self.agent_state.update_state("tmp_path", tmp.name)
                 self.agent_state.save_state()
         else:
-            tmp = tempfile.NamedTemporaryFile(delete=False, mode="w+", encoding="utf-8", suffix=".tmp")
+            tmp = tempfile.NamedTemporaryFile(
+                delete=False, mode="w+", encoding="utf-8", suffix=".md"
+            )
             self.tmp_file = tmp
             self.agent_state.update_state("tmp_path", tmp.name)
             self.agent_state.save_state()
@@ -97,7 +103,7 @@ class RecursiveAgent:
         # Instantiate Gemini/GenAI client using the official SDK
         try:
             genai.api_key = api_key  # type: ignore[attr-defined]
-            self.client = genai.GenerativeModel(self.model_name)    # type: ignore[attr-defined]
+            self.client = genai.GenerativeModel(self.model_name)  # type: ignore[attr-defined]
         except Exception as e:
             self.error_logger.log(
                 "ERROR",
@@ -153,10 +159,7 @@ You are a “Laser Lens” recursive agent with the following capabilities:
             header += f"Your last thought:\n{self.last_thought}\n\n"
         prompt = combined + header
         if self.error_logger:
-            self.error_logger.log(
-                "DEBUG",
-                f"prompt length {len(prompt)} chars"
-            )
+            self.error_logger.log("DEBUG", f"prompt length {len(prompt)} chars")
         return prompt
 
     def run(self) -> Generator[Tuple[str, int, int, Any], None, None]:
@@ -177,7 +180,7 @@ You are a “Laser Lens” recursive agent with the following capabilities:
             if self.error_logger:
                 self.error_logger.log(
                     "DEBUG",
-                    f"loop {self.current_loop}: context length {len(context_str)}"
+                    f"loop {self.current_loop}: context length {len(context_str)}",
                 )
             prompt = self._build_prompt(context_str)
 
@@ -205,10 +208,15 @@ You are a “Laser Lens” recursive agent with the following capabilities:
                     return
                 except Exception as e:
                     retry_count += 1
-                    msg = f"Error on loop {self.current_loop}, attempt {retry_count}: {e}"
+                    msg = (
+                        f"Error on loop {self.current_loop}, attempt {retry_count}: {e}"
+                    )
                     self.error_logger.log("WARNING", msg, e)
                     if retry_count > self.config.max_retries:
-                        err_payload = (f"Exceeded retries on loop {self.current_loop}: {e}", e)
+                        err_payload = (
+                            f"Exceeded retries on loop {self.current_loop}: {e}",
+                            e,
+                        )
                         yield ("error", self.current_loop, total_loops, err_payload)
                         return
                     time.sleep(backoff)
@@ -219,11 +227,9 @@ You are a “Laser Lens” recursive agent with the following capabilities:
 
             # Save loop result to history and state
             timestamp = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
-            self.history.append({
-                "prompt": prompt,
-                "response": full_response,
-                "timestamp": timestamp
-            })
+            self.history.append(
+                {"prompt": prompt, "response": full_response, "timestamp": timestamp}
+            )
             self.agent_state.update_state("history", self.history)
             self.last_thought = full_response
             self.agent_state.update_state("last_thought", self.last_thought)
@@ -237,7 +243,7 @@ You are a “Laser Lens” recursive agent with the following capabilities:
                 self.error_logger.log(
                     "ERROR",
                     f"Error parsing/executing commands on loop {self.current_loop}",
-                    e
+                    e,
                 )
 
             # Signal end of loop
@@ -293,7 +299,9 @@ You are a “Laser Lens” recursive agent with the following capabilities:
             # 3) Recursive instructions for this loop
             header = f"You are a recursive agent analyzing: {self.topic}\n"
             header += f"Loop {self.current_loop} of {self.loops}. "
-            header += "Decide whether to expand on your previous thought or to summarize.\n"
+            header += (
+                "Decide whether to expand on your previous thought or to summarize.\n"
+            )
 
             # 4) Include last_thought if present
             if self.last_thought:
@@ -313,29 +321,31 @@ You are a “Laser Lens” recursive agent with the following capabilities:
 
     def _stream_generation(self, prompt: str) -> Generator[str, None, None]:
         """
-        Call Gemini’s streaming endpoint: for each chunk:
+        Call Gemini's streaming endpoint. If the first call fails, attempt to
+        reinitialize the client once. For each chunk:
           - If chunk.text is empty or whitespace, skip.
-          - Otherwise write to .tmp, yield text.
-        After streaming ends, return the concatenated full_response string.
+          - Otherwise write to the temp file and yield the text.
         """
         try:
-            stream = self.client.generate_content(
-                prompt,
-                stream=True,
-            )
+            stream = self.client.generate_content(prompt, stream=True)
         except Exception as e:
-            raise
+            self.error_logger.log("WARNING", "Initial stream call failed", e)
+            try:
+                self.client = genai.GenerativeModel(self.model_name)
+                stream = self.client.generate_content(prompt, stream=True)
+            except Exception:
+                raise
 
         for chunk in stream:
             if hasattr(chunk, "text"):
                 text = chunk.text
             elif (
                 hasattr(chunk, "choices")
-                and isinstance(chunk.choices, list)     # type: ignore[attr-defined]
-                and len(chunk.choices) > 0              # type: ignore[attr-defined]
-                and hasattr(chunk.choices[0], "text")   # type: ignore[attr-defined]
+                and isinstance(chunk.choices, list)  # type: ignore[attr-defined]
+                and len(chunk.choices) > 0  # type: ignore[attr-defined]
+                and hasattr(chunk.choices[0], "text")  # type: ignore[attr-defined]
             ):
-                text = chunk.choices[0].text            # type: ignore[attr-defined]
+                text = chunk.choices[0].text  # type: ignore[attr-defined]
             else:
                 continue
 
@@ -347,9 +357,7 @@ You are a “Laser Lens” recursive agent with the following capabilities:
                 self.tmp_file.flush()
             except Exception as e:
                 self.error_logger.log(
-                    "WARNING",
-                    "Failed to write chunk to tmp file; continuing",
-                    e
+                    "WARNING", "Failed to write chunk to tmp file; continuing", e
                 )
 
             yield text
