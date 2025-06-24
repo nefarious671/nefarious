@@ -136,28 +136,35 @@ if uploaded_files:
 st.sidebar.markdown("---")
 with st.sidebar.form("agent_settings"):
     st.header("Agent Settings")
-    topic_in = st.text_input("Topic", value=st.session_state.topic)
+    topic_in = st.text_input("Topic", value=st.session_state.topic, key="topic_in")
     loops_in = st.slider(
-        "Recursion Loops", min_value=1, max_value=500, value=st.session_state.loops
+        "Recursion Loops", min_value=1, max_value=500, value=st.session_state.loops, key="loops_in"
     )
     st.selectbox(
         "Model",
         models_available,
         key="model_name",
     )
-    temp_in = st.slider("Temperature", 0.0, 1.0, value=st.session_state.temperature)
+    temp_in = st.slider(
+        "Temperature", 0.0, 1.0, value=st.session_state.temperature, key="temp_in"
+    )
     seed_in = st.number_input(
         "Seed (optional)",
         min_value=0,
         max_value=2**32 - 1,
         value=st.session_state.seed,
+        key="seed_in",
     )
     rpm_in = st.number_input(
-        "Requests/minute", min_value=1, max_value=100, value=st.session_state.rpm
+        "Requests/minute", min_value=1, max_value=100, value=st.session_state.rpm, key="rpm_in"
     )
-    apply_btn = st.form_submit_button("Apply")
+    btn_cols = st.columns(2)
+    with btn_cols[0]:
+        apply_btn = st.form_submit_button("Apply")
+    with btn_cols[1]:
+        start_btn = st.form_submit_button("▶️", help="Start")
 
-if apply_btn:
+if apply_btn or start_btn:
     st.session_state.topic = topic_in
     st.session_state.loops = loops_in
     st.session_state.temperature = temp_in
@@ -175,15 +182,13 @@ else:
 # Sidebar: Control Buttons
 st.sidebar.markdown("---")
 action_reason = st.sidebar.text_input("Reason", key="action_reason")
-btn_cols = st.sidebar.columns(4)
+btn_cols = st.sidebar.columns(3)
 with btn_cols[0]:
-    start_btn = st.button("▶️ Start")
+    pause_btn = st.button("⏸️", help="Pause")
 with btn_cols[1]:
-    pause_btn = st.button("⏸️ Pause")
+    resume_btn = st.button("▶️", help="Resume")
 with btn_cols[2]:
-    resume_btn = st.button("▶️ Resume")
-with btn_cols[3]:
-    stop_btn = st.button("⏹️ Stop")
+    stop_btn = st.button("⏹️", help="Stop")
 
 # Message box (enabled when paused)
 if st.session_state.reset_pause_msg:
