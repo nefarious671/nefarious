@@ -56,3 +56,5 @@
 - Added `CANCEL` and `PAUSE` commands requiring a reason and updated UI with
   collapsible loop expanders, copy buttons, and a sidebar message box.
 - Fixed Unicode surrogate pair in copy button to avoid encoding error (phase 9).
+- Improved retry logic to wait 10 seconds on 503 "model overloaded" errors
+  (phase 9) and marked phase 10 as complete in AGENTS.md.
