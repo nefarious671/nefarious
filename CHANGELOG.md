@@ -32,3 +32,5 @@
 - Added `READ_LINES` and `HELP` commands with registration and docs.
 - Prompt now states the agent runs inside a mini OS sandbox.
 - Improved `READ_LINES` error handling and added edge case tests.
+- Added alias test for `RL`, more READ_LINES and EXEC edge case tests, and
+  removed `agent_state/state.json` from version control.
