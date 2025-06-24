@@ -8,6 +8,7 @@
 > - After each change, append an entry to `CHANGELOG.md` summarizing the update and noting the current phase.
 > - Include clear docstrings and comments so future agents can navigate the codebase.
 > - Keep the user-facing `README.md` up to date as features are added.
+> - Maintain `JOURNAL.md` with notes or pain points discovered while implementing each phase. Future agents can consult this journal before starting new work.
 
 ---
 

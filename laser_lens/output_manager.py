@@ -81,3 +81,18 @@ class OutputManager:
                 "WARNING", f"Could not list outputs in {self.safe_dir}", e
             )
             return []
+
+    def save_session_metadata(self, data: dict) -> str:
+        """Save session metadata as JSON under safe_dir/session.json."""
+        import json
+
+        path = os.path.join(self.safe_dir, "session.json")
+        try:
+            with open(path, "w", encoding="utf-8") as f:
+                json.dump(data, f, indent=2)
+            return path
+        except Exception as e:
+            self.error_logger.log(
+                "ERROR", f"Failed to save session metadata to {path}", e
+            )
+            raise
