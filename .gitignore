@@ -1,5 +1,6 @@
 __pycache__
 outputs
+<<<<<<< HEAD
 laser_lens/__pycache__/config.cpython-311.pyc
 laser_lens/__pycache__/recursive_agent.cpython-311.pyc
 laser_lens/agent_state/state.json
@@ -141,3 +142,6 @@ $RECYCLE.BIN/
 .envrc
 venv/
 ENV/
+=======
+venv
+>>>>>>> 8ad954a7616332e35527cb9436bed21f8e5fa64b
