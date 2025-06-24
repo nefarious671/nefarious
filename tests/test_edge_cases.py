@@ -23,7 +23,7 @@ def test_parse_invalid_args():
     ce.register_command("FOO", foo)
     # Missing closing quote should produce no results
     results = ce.parse_and_execute('[[COMMAND: FOO val="broken]]')
-    assert results == []
+    assert results and results[0][1].startswith("ERROR:")
 
 
 def test_upload_unsupported_extension(tmp_path):

@@ -38,6 +38,8 @@
 ## Phase 8 - File I/O Refinements
 - Roadmap updated with a new phase focusing on APPEND_FILE and more robust
   WRITE_FILE behaviour.
+- Added `APPEND_FILE` command and truncation warnings in `READ_FILE`.
+- CommandExecutor now returns explicit errors for bad arguments.
 - Fixed Streamlit UI bug that caused duplicate text to appear during
   streaming output.
 
