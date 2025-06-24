@@ -8,3 +8,6 @@ This document records notes, lessons learned, and pain points discovered while w
 - Added WORD_COUNT command as part of optional enhancements.
 - Implemented truncation of oversize context files.
 - Began phase 7 with OS awareness, adding HELP and READ_LINES commands.
+- Reviewed test coverage and added edge case tests for command parsing,
+  context uploads and output saving. Enhanced READ_LINES to validate
+  numeric ranges.

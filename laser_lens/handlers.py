@@ -153,10 +153,15 @@ def WORD_COUNT(args: Dict[str, Any]) -> str:
 def READ_LINES(args: Dict[str, Any]) -> str:
     """Read a specific line range from a file in outputs."""
     fname = args.get("filename")
-    start = int(args.get("start", 1))
-    end = int(args.get("end", start + 9))
+    try:
+        start = int(args.get("start", 1))
+        end = int(args.get("end", start + 9))
+    except (TypeError, ValueError):
+        return "ERROR: start and end must be integers."
     if not fname:
         return "ERROR: Missing required argument 'filename'."
+    if start <= 0 or end < start:
+        return "ERROR: Invalid line range."
 
     safe_name = _output_mgr.sanitize_filename(fname)
     path = os.path.join(os.path.expanduser(_cfg.safe_output_dir), safe_name)

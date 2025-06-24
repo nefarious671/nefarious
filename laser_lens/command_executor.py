@@ -69,6 +69,10 @@ class CommandExecutor:
             args[key] = val
         # Validate that we consumed all text
         reconstructed = " ".join(f'{k}="{v}"' for k, v in args.items())
-        if reconstructed not in raw.replace("\n", " ").strip():
+        cleaned_raw = raw.replace("\n", " ").strip()
+        if args:
+            if reconstructed not in cleaned_raw:
+                raise ValueError(f"Invalid argument format: {raw}")
+        elif cleaned_raw:
             raise ValueError(f"Invalid argument format: {raw}")
         return args
