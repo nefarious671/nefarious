@@ -13,3 +13,9 @@ def test_sanitize_filename_basic():
     logger = ErrorLogger(cfg)
     om = OutputManager(cfg, logger)
     assert om.sanitize_filename("my file.txt") == "my_file.txt"
+
+def test_sanitize_filename_extension():
+    cfg = Config()
+    logger = ErrorLogger(cfg)
+    om = OutputManager(cfg, logger)
+    assert om.sanitize_filename("weird.exe") == "weird.txt"
