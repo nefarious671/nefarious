@@ -114,8 +114,8 @@ def main():
         register_plugin_commands(ce)
     except Exception:
         pass
-    cm = ContextManager(config, logger)
     om = OutputManager(config, logger)
+    cm = ContextManager(config, logger, om)
     as_state = AgentState(config, logger)
 
     # Handle resume from .tmp if provided

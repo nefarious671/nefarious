@@ -35,6 +35,7 @@ and CLI record metadata about each run in `outputs/session.json`.
 Large uploads are truncated automatically if they would exceed the agent's
 context window. The first and last portions are kept with a `[truncated]`
 marker so oversized files still contribute useful context.
+The complete content is saved to `outputs/full_<name>` for later retrieval.
 
 ## Available Commands
 
@@ -42,6 +43,7 @@ marker so oversized files still contribute useful context.
 | -------------- | ----------------------------------------- |
 | WRITE_FILE     | Save content to the outputs directory.    |
 | READ_FILE      | Read a file from outputs.                 |
+| READ_LINES     | Read specific line range from a file.     |
 | LIST_OUTPUTS   | List files under outputs/.                |
 | DELETE_FILE    | Delete a file from outputs/.              |
 | EXEC           | Execute a sandboxed shell command.        |
@@ -50,5 +52,7 @@ marker so oversized files still contribute useful context.
 | CAT            | Alias for `READ_FILE`.                    |
 | RM             | Alias for `DELETE_FILE`.                  |
 | WC             | Alias for `WORD_COUNT`.                   |
+| RL             | Alias for `READ_LINES`.                   |
+| HELP           | Show OS info and command list.            |
 | *(plugins)*    | Additional commands registered via entry points. |
 

@@ -149,3 +149,43 @@ def WORD_COUNT(args: Dict[str, Any]) -> str:
         _logger.log("ERROR", f"Failed to WORD_COUNT {safe_name}", e)
         return f"ERROR: Could not read file {safe_name}: {e}"
 
+
+def READ_LINES(args: Dict[str, Any]) -> str:
+    """Read a specific line range from a file in outputs."""
+    fname = args.get("filename")
+    start = int(args.get("start", 1))
+    end = int(args.get("end", start + 9))
+    if not fname:
+        return "ERROR: Missing required argument 'filename'."
+
+    safe_name = _output_mgr.sanitize_filename(fname)
+    path = os.path.join(os.path.expanduser(_cfg.safe_output_dir), safe_name)
+    if not os.path.isfile(path):
+        return f"ERROR: File {safe_name} does not exist."
+
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            lines = f.readlines()[start - 1 : end]
+        return "".join(lines)
+    except Exception as e:
+        _logger.log("ERROR", f"Failed to READ_LINES {safe_name}", e)
+        return f"ERROR: Could not read file {safe_name}: {e}"
+
+
+def HELP(args: Dict[str, Any]) -> str:
+    """Return summary of OS environment and available commands."""
+    import platform
+
+    cmds = [
+        "WRITE_FILE",
+        "READ_FILE",
+        "READ_LINES",
+        "LIST_OUTPUTS",
+        "DELETE_FILE",
+        "EXEC",
+        "WORD_COUNT",
+        "HELP",
+    ]
+    info = platform.platform()
+    return "Available commands: " + ", ".join(cmds) + f"\nOS: {info}"
+

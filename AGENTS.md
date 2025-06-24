@@ -138,6 +138,26 @@ string returned by `get_context()`.
 
 ---
 
+## Phase 7 – OS Awareness & Chunked Reading
+
+1. **Persist truncated uploads**
+   - When `_truncate_large_file` trims content, also save the full text to
+     `outputs/` as `full_<name>` and mention this file in the stored buffer.
+   - Provide a `READ_LINES` command so the agent can request specific line
+     ranges from these files.
+2. **HELP command & prompt update**
+   - Add a `HELP` handler returning OS details and the registered command list.
+   - Update the system prompt to explain that the agent operates inside a
+     constrained OS and may issue `[[COMMAND: HELP]]` to review capabilities.
+3. **Feedback loop**
+   - Encourage agents to record OS review notes in `outputs/feedback.md` using
+     existing write commands so future phases can improve the environment.
+
+> **Acceptance**: Agent can call `HELP` for environment info and retrieve
+lines from a saved oversize file using `READ_LINES`.
+
+---
+
 ## File‑by‑File TODO (cheat‑sheet for Copilot)
 
 | Path                  | Touch? | Key edits                 |
