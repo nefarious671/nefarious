@@ -14,3 +14,7 @@
 - UI parses command markers and renders results in separate blocks.
 - Auto-scrolls to newest output and provides final Markdown download.
 
+
+## Phase 4 - Hardening & Tests
+- Added simulation-based unit tests for EXEC timeout and sanitize_filename.
+- Introduced GitHub Actions workflow running ruff and pytest.

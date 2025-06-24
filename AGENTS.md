@@ -144,9 +144,10 @@ To keep each phase manageable, follow this iterative workflow:
 3. **Tests** – Add or extend `tests/` with unit tests for new behaviour. Use
    `pytest` for execution and `ruff` for style checking. Aim to gradually raise
    coverage so phase‑4 can reach 80 %.
-4. **Automation** – Future PRs should include a minimal GitHub Actions workflow
+4. **Simulation** – If direct access to agents or models is unavailable, mock or simulate their behaviour in tests to validate logic.
+5. **Automation** – Future PRs should include a minimal GitHub Actions workflow
    running `ruff` and `pytest -q`. This keeps the feedback loop automatic.
-5. **README** – Document any user‑visible commands or UI changes so the next
+6. **README** – Document any user‑visible commands or UI changes so the next
    agent has up‑to‑date instructions.
 
 This process ensures every phase is reviewable and that regressions are caught
