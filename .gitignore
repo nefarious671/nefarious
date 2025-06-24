@@ -1,8 +1,5 @@
 __pycache__
 outputs
-laser_lens/__pycache__/config.cpython-311.pyc
-laser_lens/__pycache__/recursive_agent.cpython-311.pyc
-laser_lens/agent_state/state.json
 
 # --- Common Python gitignore patterns ---
 # Byte-compiled / optimized / DLL files
@@ -145,4 +142,6 @@ laser_lens/__pycache__/config.cpython-311.pyc
 laser_lens/__pycache__/output_manager.cpython-311.pyc
 laser_lens/__pycache__/recursive_agent.cpython-311.pyc
 laser_lens/__pycache__/utils.cpython-311.pyc
+laser_lens/agent_state/state.json
+laser_lens/agent_state/state.json
 laser_lens/agent_state/state.json

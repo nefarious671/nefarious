@@ -331,7 +331,7 @@ You are a “Laser Lens” recursive agent with the following capabilities:
         except Exception as e:
             self.error_logger.log("WARNING", "Initial stream call failed", e)
             try:
-                self.client = genai.GenerativeModel(self.model_name)
+                self.client = genai.GenerativeModel(self.model_name) # type: ignore[attr-defined]
                 stream = self.client.generate_content(prompt, stream=True)
             except Exception:
                 raise
