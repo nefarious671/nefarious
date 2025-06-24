@@ -19,9 +19,6 @@ from utils import (
 )
 from handlers import WRITE_FILE, READ_FILE, LIST_OUTPUTS, DELETE_FILE
 
-# Approximate number of characters per page displayed
-PAGE_SIZE = 30000
-
 
 def get_available_models() -> list[str]:
     """
@@ -41,8 +38,7 @@ def get_available_models() -> list[str]:
             if "generateContent" in (m.supported_generation_methods or [])
         ]
         models_available = sorted(
-            [m for m in models_available if "gemini" in m.lower()],
-            reverse=True
+            [m for m in models_available if "gemini" in m.lower()], reverse=True
         )
         if not models_available:
             models_available = ["models/gemini-2.0-pro"]
@@ -98,10 +94,6 @@ if "topic" not in st.session_state:
     st.session_state.topic = ""
 if "loops" not in st.session_state:
     st.session_state.loops = config.default_loops
-if "pages" not in st.session_state:
-    st.session_state.pages = [""]
-if "current_page" not in st.session_state:
-    st.session_state.current_page = 0
 if "temperature" not in st.session_state:
     st.session_state.temperature = config.default_temperature
 if "seed" not in st.session_state:
@@ -120,7 +112,7 @@ uploaded_files = st.sidebar.file_uploader(
     "Upload .md, .txt or .tmp",
     type=["md", "txt", "tmp"],
     accept_multiple_files=True,
-    key="file_uploader"
+    key="file_uploader",
 )
 
 if uploaded_files:
@@ -149,9 +141,7 @@ with st.sidebar.form("agent_settings"):
         index=models_available.index(st.session_state.model_name),
         key="model_name",
     )
-    temp_in = st.slider(
-        "Temperature", 0.0, 1.0, value=st.session_state.temperature
-    )
+    temp_in = st.slider("Temperature", 0.0, 1.0, value=st.session_state.temperature)
     seed_in = st.number_input(
         "Seed (optional)",
         min_value=0,
@@ -211,11 +201,10 @@ if st.sidebar.button("🔄 Reset State"):
     # Also forget any file_upload markers so user can re‐upload
     st.session_state.uploaded_files_list = []
 
-    # 4) Reset pagination/UI
-    st.session_state.pages = [""]
-    st.session_state.current_page = 0
+    # 4) Reset UI elements
     if st.session_state.stream_placeholder is not None:
         st.session_state.stream_placeholder.empty()
+    st.session_state.stream_content = ""
 
     if st.session_state.progress_bar is not None:
         st.session_state.progress_bar.progress(0.0)
@@ -224,12 +213,7 @@ if st.sidebar.button("🔄 Reset State"):
         st.session_state.error_container.empty()
     st.success("All agent state and uploaded context have been cleared.")
 
-# Pagination buttons
-prev_page_btn = st.sidebar.button("⬅️ Prev Page")
-next_page_btn = st.sidebar.button("Next Page ➡️")
-st.sidebar.markdown(
-    f"Page {st.session_state.current_page + 1} / {len(st.session_state.pages)}"
-)
+# Pagination removed
 
 # Main area placeholders
 if st.session_state.stream_placeholder is None:
@@ -258,12 +242,11 @@ def start_agent() -> bool:
     agent_state.delete_state("tmp_path")
     agent_state.save_state()
 
-    # Clear UI placeholders and pagination
+    # Clear UI placeholders
     st.session_state.stream_placeholder.empty()
     st.session_state.progress_bar.progress(0.0)
     st.session_state.error_container.empty()
-    st.session_state.pages = [""]
-    st.session_state.current_page = 0
+    st.session_state.stream_content = ""
 
     # Instantiate the agent (it will call get_context() under the hood)
     try:
@@ -285,18 +268,8 @@ def start_agent() -> bool:
         return True
     except Exception as e:
         st.session_state.agent = None
-        st.session_state.error_container.error(
-            f"Failed to initialize agent: {e}"
-        )
+        st.session_state.error_container.error(f"Failed to initialize agent: {e}")
         return False
-
-
-def show_current_page() -> None:
-    """Render the currently selected page in the main placeholder."""
-    if st.session_state.pages:
-        idx = st.session_state.current_page
-        content = st.session_state.pages[idx]
-        st.session_state.stream_placeholder.markdown(content)
 
 
 def run_stream():
@@ -310,23 +283,16 @@ def run_stream():
     buffer = ""
     sentence_enders = {".", "?", "!"}
 
+    if "stream_content" not in st.session_state:
+        st.session_state.stream_content = ""
+
     def flush_buffer_ui(final: bool = False) -> None:
-        """Append buffered text to pages and update display."""
+        """Append buffered text to the stream placeholder."""
         nonlocal buffer
         if not buffer.strip():
             return
-        while buffer:
-            remaining = PAGE_SIZE - len(st.session_state.pages[-1])
-            if remaining <= 0:
-                st.session_state.pages.append("")
-                st.session_state.current_page = len(st.session_state.pages) - 1
-                remaining = PAGE_SIZE
-            to_write = buffer[:remaining]
-            st.session_state.pages[-1] += to_write
-            buffer = buffer[remaining:]
-        # Show the last page if it’s the current one or if final
-        if st.session_state.current_page == len(st.session_state.pages) - 1 or final:
-            show_current_page()
+        st.session_state.stream_content += buffer
+        st.session_state.stream_placeholder.markdown(st.session_state.stream_content)
         buffer = ""
 
     try:
@@ -334,7 +300,10 @@ def run_stream():
             if event_type == "chunk":
                 buffer += payload
                 # Flush when buffer ends in a sentence ender or is large
-                if any(buffer.rstrip().endswith(p) for p in sentence_enders) or len(buffer) > 200:
+                if (
+                    any(buffer.rstrip().endswith(p) for p in sentence_enders)
+                    or len(buffer) > 200
+                ):
                     flush_buffer_ui()
 
             elif event_type == "loop_end":
@@ -348,7 +317,19 @@ def run_stream():
                 flush_buffer_ui(final=True)
                 message, exc = payload
                 st.session_state.error_container.empty()
-                logger.display_interactive(st.session_state.error_container, message, exc)
+                logger.display_interactive(
+                    st.session_state.error_container, message, exc
+                )
+                tmp_path = agent_state.get_state("tmp_path")
+                if tmp_path and os.path.isfile(tmp_path):
+                    with open(tmp_path, "r", encoding="utf-8") as f:
+                        tmp_md = f.read()
+                    st.download_button(
+                        "Download Partial Markdown",
+                        data=tmp_md,
+                        file_name="partial.md",
+                        mime="text/markdown",
+                    )
                 return
 
         # After all loops finish, flush any leftover buffer
@@ -356,9 +337,31 @@ def run_stream():
 
     except CancelledException:
         flush_buffer_ui(final=True)
+        tmp_path = agent_state.get_state("tmp_path")
+        if tmp_path and os.path.isfile(tmp_path):
+            with open(tmp_path, "r", encoding="utf-8") as f:
+                tmp_md = f.read()
+            st.download_button(
+                "Download Partial Markdown",
+                data=tmp_md,
+                file_name="partial.md",
+                mime="text/markdown",
+            )
     except Exception as e:
         logger.log("ERROR", "Unexpected exception in UI stream", e)
-        logger.display_interactive(st.session_state.error_container, "Unexpected error", e)
+        logger.display_interactive(
+            st.session_state.error_container, "Unexpected error", e
+        )
+        tmp_path = agent_state.get_state("tmp_path")
+        if tmp_path and os.path.isfile(tmp_path):
+            with open(tmp_path, "r", encoding="utf-8") as f:
+                tmp_md = f.read()
+            st.download_button(
+                "Download Partial Markdown",
+                data=tmp_md,
+                file_name="partial.md",
+                mime="text/markdown",
+            )
         return
 
     # Completed all loops: build and save final Markdown
@@ -368,10 +371,17 @@ def run_stream():
     try:
         saved = output_manager.save_output(filename, md_content)
         st.success(f"Final Markdown saved to {saved}")
-        st.download_button("Download Markdown", data=md_content, file_name=filename, mime="text/markdown")
+        st.download_button(
+            "Download Markdown",
+            data=md_content,
+            file_name=filename,
+            mime="text/markdown",
+        )
     except Exception as e:
         logger.log("ERROR", "Failed to save final Markdown in UI", e)
-        logger.display_interactive(st.session_state.error_container, "Failed to save final output", e)
+        logger.display_interactive(
+            st.session_state.error_container, "Failed to save final output", e
+        )
 
 
 # Button interactions
@@ -388,11 +398,3 @@ if resume_btn and st.session_state.agent:
 
 if stop_btn and st.session_state.agent:
     st.session_state.agent.request_cancel()
-
-if prev_page_btn and st.session_state.current_page > 0:
-    st.session_state.current_page -= 1
-    show_current_page()
-
-if next_page_btn and st.session_state.current_page < len(st.session_state.pages) - 1:
-    st.session_state.current_page += 1
-    show_current_page()

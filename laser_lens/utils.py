@@ -8,6 +8,7 @@ from typing import List, Tuple
 
 PREFS_PATH = os.path.expanduser("~/.laser_lens_prefs.json")
 
+
 def slugify(text: str) -> str:
     """
     Converts 'My Topic Title!' → 'my_topic_title'
@@ -25,6 +26,7 @@ def suggest_filename(topic: str) -> str:
     Builds a filename from topic + timestamp, with '.md' extension.
     """
     from datetime import datetime
+
     base = slugify(topic)
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
     return f"{base}_{ts}.md"
@@ -51,6 +53,7 @@ def parse_tmp(raw: str, delim: str) -> Tuple[List[str], str]:
     last = parts[-1]
     return (completed, last)
 
+
 def build_markdown(history: list, topic: str) -> str:
     """
     Given history=[{"prompt":…, "response":…, "timestamp":…}, …],
@@ -66,6 +69,7 @@ def build_markdown(history: list, topic: str) -> str:
         # lines.append(f"## Loop {idx} ({entry['timestamp']})\n")
         lines.append(f"```\n{entry['response']}\n```\n")
     return "\n".join(lines)
+
 
 def load_pref_model(models_available: List[str]) -> str:
     """

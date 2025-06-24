@@ -2,6 +2,7 @@
 
 import os
 import re
+import time
 from typing import List
 
 from config import Config
@@ -34,6 +35,8 @@ class OutputManager:
         root, ext = os.path.splitext(base_name)
         if ext.lower() not in self.config.allowed_extensions:
             ext = ".txt"
+        # Limit filename length to avoid OSError: File name too long
+        root = root[:100]
         safe = root + ext
         return safe
 
@@ -47,6 +50,24 @@ class OutputManager:
             with open(full_path, "w", encoding="utf-8") as f:
                 f.write(content)
             return full_path
+        except OSError as e:
+            # Retry with a simple fallback filename if the sanitized one fails
+            self.error_logger.log(
+                "WARNING",
+                f"Failed to save output to {full_path}; retrying with fallback",
+                e,
+            )
+            fallback_name = f"output_{int(time.time())}.md"
+            fallback_path = os.path.join(self.safe_dir, fallback_name)
+            try:
+                with open(fallback_path, "w", encoding="utf-8") as f:
+                    f.write(content)
+                return fallback_path
+            except Exception as e2:
+                self.error_logger.log(
+                    "ERROR", f"Failed to save output fallback {fallback_path}", e2
+                )
+                raise
         except Exception as e:
             self.error_logger.log("ERROR", f"Failed to save output to {full_path}", e)
             raise
@@ -56,5 +77,7 @@ class OutputManager:
         try:
             return sorted(os.listdir(self.safe_dir))
         except Exception as e:
-            self.error_logger.log("WARNING", f"Could not list outputs in {self.safe_dir}", e)
+            self.error_logger.log(
+                "WARNING", f"Could not list outputs in {self.safe_dir}", e
+            )
             return []
