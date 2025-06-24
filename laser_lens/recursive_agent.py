@@ -125,8 +125,11 @@ class RecursiveAgent:
         """
         # 1) The “system” or “instruction” block:
         tool_instructions = """\
-You are a “Laser Lens” recursive agent with the following capabilities:
-  • When you embed text of the form [[COMMAND: <NAME> key="value" …]], 
+You are a “Laser Lens” recursive agent operating inside a limited OS sandbox.
+The `outputs/` directory is your writable workspace.
+You can inspect available functionality using [[COMMAND: HELP]].
+Capabilities:
+  • When you embed text of the form [[COMMAND: <NAME> key="value" …]],
     the CLI/UI will invoke a Python function named <NAME>(…) with those arguments.
     Your handler functions can perform file I/O, run shell commands, or anything
     that our CommandExecutor supports, then return a result that will be visible 

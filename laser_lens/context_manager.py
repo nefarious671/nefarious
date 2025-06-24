@@ -2,6 +2,8 @@
 
 from typing import List, Tuple, Optional
 
+from output_manager import OutputManager
+
 from config import Config
 from utils import count_tokens, parse_tmp
 from error_logger import ErrorLogger
@@ -12,9 +14,15 @@ class ContextManager:
     Aggregates uploaded context files (.md, .txt) and/or a .tmp stream into a single prompt context.
     """
 
-    def __init__(self, config: Config, error_logger: Optional[ErrorLogger] = None):
+    def __init__(
+        self,
+        config: Config,
+        error_logger: Optional[ErrorLogger] = None,
+        output_manager: Optional[OutputManager] = None,
+    ):
         self.config = config
         self.error_logger = error_logger
+        self.output_manager = output_manager
         # Internal list of (filename, content) tuples, ordered by upload time
         self._buffers: List[Tuple[str, str]] = []
 
@@ -28,6 +36,10 @@ class ContextManager:
         marker = "\n...[truncated]...\n"
         keep = max(0, (limit - len(marker)) // 2)
         truncated = text[:keep] + marker + text[-keep:]
+        if self.output_manager:
+            safe_name = self.output_manager.sanitize_filename(f"full_{file_name}")
+            self.output_manager.save_output(safe_name, text)
+            truncated += f"\n\n[Full file saved as {safe_name}]"
         if self.error_logger:
             self.error_logger.log(
                 "INFO", f"Truncated {file_name} to fit context window"

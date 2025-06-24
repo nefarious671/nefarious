@@ -26,3 +26,8 @@
 
 ## Phase 6 - Context Overflow Handling
 - Oversized context files are now truncated instead of discarded when uploaded.
+
+## Phase 7 - OS Awareness & Chunked Reading
+- Full uploads saved to `outputs/` when truncated and referenced in context.
+- Added `READ_LINES` and `HELP` commands with registration and docs.
+- Prompt now states the agent runs inside a mini OS sandbox.
