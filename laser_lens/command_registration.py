@@ -9,6 +9,8 @@ from handlers import (
     EXEC,
     WORD_COUNT,
     HELP,
+    CANCEL,
+    PAUSE,
 )
 
 try:
@@ -28,6 +30,8 @@ def register_core_commands(ce: CommandExecutor) -> None:
     ce.register_command("EXEC", EXEC)
     ce.register_command("WORD_COUNT", WORD_COUNT)
     ce.register_command("HELP", HELP)
+    ce.register_command("CANCEL", CANCEL)
+    ce.register_command("PAUSE", PAUSE)
 
     for alias, target in {
         "LS": "LIST_OUTPUTS",

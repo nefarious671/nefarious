@@ -58,6 +58,8 @@ Command outputs are numbered in prompts and logs so multi-command errors are eas
 | WC             | Alias for `WORD_COUNT`.                   |
 | RL             | Alias for `READ_LINES`.                   |
 | HELP           | Show OS info and command list.            |
+| CANCEL         | Stop recursion with a reason.             |
+| PAUSE          | Pause recursion with a reason.            |
 | *(plugins)*    | Additional commands registered via entry points. |
 
 `READ_LINES` requires numeric `start` and `end` parameters. If the values are

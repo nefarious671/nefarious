@@ -2,6 +2,7 @@
 
 import os
 import re
+import json
 import streamlit as st
 
 from config import Config
@@ -171,10 +172,30 @@ else:
 
 # Sidebar: Control Buttons
 st.sidebar.markdown("---")
+action_reason = st.sidebar.text_input("Reason", key="action_reason")
 start_btn = st.sidebar.button("▶️ Start")
 pause_btn = st.sidebar.button("⏸️ Pause")
 resume_btn = st.sidebar.button("▶️ Resume")
 stop_btn = st.sidebar.button("⏹️ Stop")
+
+# Message box (enabled when paused)
+msg = st.sidebar.text_input(
+    "Message to Agent", key="pause_msg", disabled=not agent_state.get_state("paused")
+)
+send_msg_btn = st.sidebar.button(
+    "Send Message", key="send_msg", disabled=not agent_state.get_state("paused")
+)
+if send_msg_btn and msg.strip():
+    context_manager.add_inline_context(msg.strip())
+    st.sidebar.success("Message queued for next run.")
+    st.session_state.pause_msg = ""
+
+paused_reason = agent_state.get_state("paused")
+if paused_reason:
+    st.sidebar.info(f"Agent paused: {paused_reason}")
+cancel_reason = agent_state.get_state("cancelled")
+if cancel_reason:
+    st.sidebar.info(f"Agent cancelled: {cancel_reason}")
 
 # Sidebar: “Reset State” button
 st.sidebar.markdown("---")
@@ -285,36 +306,57 @@ def run_stream():
     # Pattern to intercept command markers
     cmd_pattern = re.compile(r"\[\[COMMAND:\s*(?P<name>\w+)(?P<args>.*?)\]\]", re.DOTALL)
 
-    loop_placeholder = st.empty()
-    st.session_state.stream_blocks.append(loop_placeholder)
+    loop_container = None
+    text_placeholder = None
+    current_loop = 0
     buffer = ""
 
     try:
         for event_type, loop_idx, _, payload in agent.run():
+            if loop_idx != current_loop:
+                current_loop = loop_idx
+                loop_container = st.expander(f"Loop {loop_idx}", expanded=True)
+                text_placeholder = loop_container.empty()
+                st.session_state.stream_blocks.append(loop_container)
+                buffer = ""
+
             if event_type == "chunk":
                 buffer += payload
-                loop_placeholder.markdown(buffer)
+                if text_placeholder:
+                    text_placeholder.markdown(buffer)
 
             elif event_type == "loop_end":
                 # Re-render final loop with command outputs
                 full_text = buffer
-                loop_placeholder.empty()
+                if text_placeholder:
+                    text_placeholder.empty()
                 results = agent_state.get_state("command_results") or []
                 pos = 0
                 r_idx = 0
                 for m in cmd_pattern.finditer(full_text):
                     pre = full_text[pos:m.start()]
-                    if pre.strip():
-                        loop_placeholder.markdown(pre)
+                    if pre.strip() and text_placeholder:
+                        text_placeholder.markdown(pre)
                     cmd_name = m.group("name")
                     arg_str = m.group("args").strip()
                     result = results[r_idx][1] if r_idx < len(results) else ""
-                    loop_placeholder.info(f"\u25B6 {cmd_name} {arg_str}")
-                    loop_placeholder.code(str(result), language="bash")
+                    if text_placeholder:
+                        text_placeholder.info(f"\u25B6 {cmd_name} {arg_str}")
+                        text_placeholder.code(str(result), language="bash")
                     pos = m.end()
                     r_idx += 1
-                if pos < len(full_text):
-                    loop_placeholder.markdown(full_text[pos:])
+                if pos < len(full_text) and text_placeholder:
+                    text_placeholder.markdown(full_text[pos:])
+                copy_id = f"copy_{loop_idx}"
+                loop_container.markdown(
+                    f"<button id='{copy_id}'>\uD83D\uDCCB Copy</button>",
+                    unsafe_allow_html=True,
+                )
+                safe = json.dumps(full_text)
+                st.markdown(
+                    f"<script>document.getElementById('{copy_id}').onclick=function(){{navigator.clipboard.writeText({safe});}};</script>",
+                    unsafe_allow_html=True,
+                )
                 buffer = ""
 
                 frac = loop_idx / total_loops
@@ -328,8 +370,9 @@ def run_stream():
 
                 # Prepare container for next loop
                 if loop_idx < total_loops:
-                    loop_placeholder = st.empty()
-                    st.session_state.stream_blocks.append(loop_placeholder)
+                    loop_container = st.expander(f"Loop {loop_idx + 1}", expanded=True)
+                    text_placeholder = loop_container.empty()
+                    st.session_state.stream_blocks.append(loop_container)
 
             elif event_type == "error":
                 message, exc = payload
@@ -412,11 +455,11 @@ if start_btn:
         run_stream()
 
 if pause_btn and st.session_state.agent:
-    st.session_state.agent.request_pause()
+    st.session_state.agent.request_pause(action_reason or "user pause")
 
 if resume_btn and st.session_state.agent:
     st.session_state.agent.resume()
     run_stream()
 
 if stop_btn and st.session_state.agent:
-    st.session_state.agent.request_cancel()
+    st.session_state.agent.request_cancel(action_reason or "user cancel")
