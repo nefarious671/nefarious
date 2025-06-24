@@ -30,9 +30,10 @@ streamlit run laser_lens/ui_main.py
 During each loop the UI highlights commands as informational blocks and shows
 their results in separate code sections. The view automatically scrolls to the
 newest output and offers a download button for the final Markdown. The sidebar
-displays the current agent status and presents the Start/Pause/Resume/Stop
-controls in a single row. Both the UI and CLI record metadata about each run in
-`outputs/session.json`.
+displays the current agent status. The Start button now lives inside the
+settings form so any changes are applied automatically, while the
+Pause/Resume/Stop controls appear in a single row using icon-only buttons.
+Both the UI and CLI record metadata about each run in `outputs/session.json`.
 
 When paused—via the sidebar button or a `PAUSE` command—the sidebar displays a
 message box so you can send short notes to the agent. The agent must include a
