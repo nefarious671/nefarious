@@ -30,14 +30,15 @@ class CommandExecutor:
         For each, parse arguments, look up handler, execute, and collect (command_name, result).
         """
         results: List[Tuple[str, Any]] = []
-        for match in self.COMMAND_PATTERN.finditer(text):
+        for idx, match in enumerate(self.COMMAND_PATTERN.finditer(text), start=1):
             name = match.group("name").strip().upper()
             raw_args = match.group("args").strip()
+            self.error_logger.log("DEBUG", f"cmd {idx}: {name} {raw_args}")
             try:
                 args = self._parse_args(raw_args)
             except ValueError as e:
                 self.error_logger.log(
-                    "WARNING", f"Failed to parse args for command {name}: {e}"
+                    "WARNING", f"Failed to parse args for command {idx} {name}: {e}"
                 )
                 results.append((name, f"ERROR: {e}"))
                 continue
@@ -54,7 +55,7 @@ class CommandExecutor:
                 results.append((name, result))
             except Exception as e:
                 self.error_logger.log(
-                    "ERROR", f"Error executing handler for command {name}", e
+                    "ERROR", f"Command {idx} {name} failed", e
                 )
                 results.append((name, f"ERROR: {e}"))
         return results
