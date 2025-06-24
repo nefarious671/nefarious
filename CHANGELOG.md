@@ -53,3 +53,5 @@
 ## Maintenance
 - Marked phases 0-8 as complete in AGENTS.md; phase 9 remains in progress.
 - Ready for Gemini testing review and new feature requests.
+- Added `CANCEL` and `PAUSE` commands requiring a reason and updated UI with
+  collapsible loop expanders, copy buttons, and a sidebar message box.

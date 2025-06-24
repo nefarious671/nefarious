@@ -12,7 +12,7 @@
 - Agents may propose improvements or modifications to this roadmap and should update the relevant phase descriptions before implementing them.
 - Review `GEMINIOUTPUT.md` for the latest testing feedback. When new notes appear, add a phase update here and record the timestamp below.
 
-Last feedback synced: 2025-06-24 17:19 UTC
+Last feedback synced: 2025-06-24 18:34 UTC
 
 ### Phase Status
 
@@ -28,6 +28,7 @@ Last feedback synced: 2025-06-24 17:19 UTC
 | 7 – OS Awareness & Chunked Reading | ✅ Completed |
 | 8 – File I/O Refinements | ✅ Completed |
 | 9 – Transparency & Dry Run | ☐ In Progress |
+| 10 – Pause Messaging & UI Improvements | ☐ Not Started |
 
 ---
 
@@ -215,6 +216,25 @@ Building on Gemini feedback, increase clarity and safety:
 
 > **Acceptance**: Agent sees explicit truncation notices and can preview an
 `EXEC` command using `dry_run`.
+
+---
+
+## Phase 10 – Pause Messaging & UI Improvements
+
+Incorporate Gemini feedback on conversation flow:
+
+1. **Pause/Cancel reasons**
+   - `PAUSE` and `CANCEL` commands now require a `reason` argument.
+   - UI buttons forward the text from the sidebar "Reason" field.
+2. **Sidebar messaging**
+   - When paused, a text box becomes enabled allowing the user to add
+     short notes to the context.
+3. **Collapsible loops**
+   - Each loop’s output is rendered inside a collapsible expander with a
+     one‑click copy button.
+
+> **Acceptance**: User can pause the agent, send a note, and resume without
+losing prior output.
 
 ---
 

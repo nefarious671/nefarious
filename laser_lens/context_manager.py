@@ -1,6 +1,7 @@
 # context_manager.py
 
 from typing import List, Tuple, Optional
+import time
 
 from output_manager import OutputManager
 
@@ -119,6 +120,12 @@ class ContextManager:
         self._buffers = []
         if self.error_logger:
             self.error_logger.log("DEBUG", "Context cleared")
+
+    def add_inline_context(self, text: str) -> None:
+        """Add a short note directly into the context buffers."""
+        name = f"user_note_{int(time.time())}.txt"
+        self._buffers.append((name, text))
+        self._truncate_if_needed()
 
     def _truncate_if_needed(self) -> None:
         """

@@ -221,3 +221,19 @@ def HELP(args: Dict[str, Any]) -> str:
     info = platform.platform()
     return "Available commands: " + ", ".join(cmds) + f"\nOS: {info}"
 
+
+def CANCEL(args: Dict[str, Any]) -> str:
+    """Return the reason for cancelling recursion."""
+    reason = args.get("reason", "").strip()
+    if not reason:
+        return "ERROR: Missing required argument 'reason'."
+    return reason
+
+
+def PAUSE(args: Dict[str, Any]) -> str:
+    """Return the reason for pausing recursion."""
+    reason = args.get("reason", "").strip()
+    if not reason:
+        return "ERROR: Missing required argument 'reason'."
+    return reason
+

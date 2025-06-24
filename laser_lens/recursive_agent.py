@@ -261,6 +261,11 @@ Capabilities:
                 results = self.command_executor.parse_and_execute(full_response)
                 if results:
                     self.agent_state.update_state("command_results", results)
+                    for name, res in results:
+                        if name == "CANCEL" and not str(res).startswith("ERROR"):
+                            self.request_cancel(str(res))
+                        elif name == "PAUSE" and not str(res).startswith("ERROR"):
+                            self.request_pause(str(res))
             except Exception as e:
                 self.error_logger.log(
                     "ERROR",
@@ -340,21 +345,21 @@ Capabilities:
             if self.paused:
                 return
 
-    def request_cancel(self) -> None:
+    def request_cancel(self, reason: str) -> None:
         """
         Request cancellation: this flag causes _stream_generation to abort
         and run() to exit after yielding the current error or chunk.
         """
         self.cancelled = True
-        self.agent_state.update_state("cancelled", True)
+        self.agent_state.update_state("cancelled", reason)
         self.agent_state.save_state()
 
-    def request_pause(self) -> None:
+    def request_pause(self, reason: str) -> None:
         """
         Request pause: run() will complete the current loop and then stop.
         """
         self.paused = True
-        self.agent_state.update_state("paused", True)
+        self.agent_state.update_state("paused", reason)
         self.agent_state.save_state()
 
     def resume(self) -> None:
