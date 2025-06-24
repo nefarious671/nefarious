@@ -140,7 +140,6 @@ with st.sidebar.form("agent_settings"):
     st.selectbox(
         "Model",
         models_available,
-        index=models_available.index(st.session_state.model_name),
         key="model_name",
     )
     temp_in = st.slider("Temperature", 0.0, 1.0, value=st.session_state.temperature)
