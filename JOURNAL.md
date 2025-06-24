@@ -13,3 +13,4 @@ This document records notes, lessons learned, and pain points discovered while w
   numeric ranges.
 - Added tests for RL alias and additional READ_LINES/EXEC edge cases.
   Removed lingering state.json from version control.
+- Verified batch prompt with multiple file commands and added numbering for command logs.

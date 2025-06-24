@@ -38,6 +38,7 @@ marker so oversized files still contribute useful context.
 The complete content is saved to `outputs/full_<name>` for later retrieval.
 When `READ_FILE` truncates output to the first 10 lines it will prefix a
 `WARNING:` message showing the original line count.
+Command outputs are numbered in prompts and logs so multi-command errors are easier to trace.
 
 ## Available Commands
 

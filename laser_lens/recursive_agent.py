@@ -175,10 +175,11 @@ Capabilities:
         # Include tool outputs from previous loop
         results = self.agent_state.get_state("command_results") or []
         if results:
-            tool_context = "\n".join(
-                f"\u2022 {name}: {str(result)[:500]}" for name, result in results
-            )
-            prompt_parts.append(f"\n\n## Tool Outputs\n{tool_context}")
+            tool_lines = []
+            for idx, (name, result) in enumerate(results, start=1):
+                snippet = str(result)[:500]
+                tool_lines.append(f"\u2022 {idx}. {name}: {snippet}")
+            prompt_parts.append("\n\n## Tool Outputs\n" + "\n".join(tool_lines))
 
         prompt = "".join(prompt_parts)
         if self.error_logger:
