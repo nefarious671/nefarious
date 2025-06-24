@@ -63,3 +63,4 @@
 - Sidebar now shows agent status, Start/Pause/Resume/Stop buttons are horizontal,
   and blank loop expanders no longer appear (phase 10).
 - Start button now submits settings form automatically and all control buttons use icons only.
+* Fixed loop counter persisting one beyond final loop and reset UI status on completion (phase 10).

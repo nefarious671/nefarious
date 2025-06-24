@@ -292,6 +292,11 @@ Capabilities:
             if self.paused:
                 break
 
+        # If recursion completed normally, cap current_loop at total_loops so
+        # the UI does not show an impossible "loop N+1 of N" status.
+        if not self.paused and not self.cancelled and self.current_loop > total_loops:
+            self.current_loop = total_loops
+            self.agent_state.update_state("current_loop", self.current_loop)
 
         self.agent_state.save_state()
 
