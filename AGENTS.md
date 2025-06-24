@@ -118,6 +118,7 @@ st.code(result, language="bash")
 * CLI parity with UI (pretty printing tool output).
 * Persist session metadata in `outputs/session.json`.
 * Plug‑in support for user‑defined commands via entry‑points.
+* Add `WORD_COUNT` command to report line and word counts.
 
 ---
 

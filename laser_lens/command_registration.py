@@ -5,6 +5,7 @@ from handlers import (
     LIST_OUTPUTS,
     DELETE_FILE,
     EXEC,
+    WORD_COUNT,
 )
 
 try:
@@ -20,11 +21,13 @@ def register_core_commands(ce: CommandExecutor) -> None:
     ce.register_command("LIST_OUTPUTS", LIST_OUTPUTS)
     ce.register_command("DELETE_FILE", DELETE_FILE)
     ce.register_command("EXEC", EXEC)
+    ce.register_command("WORD_COUNT", WORD_COUNT)
 
     for alias, target in {
         "LS": "LIST_OUTPUTS",
         "CAT": "READ_FILE",
         "RM": "DELETE_FILE",
+        "WC": "WORD_COUNT",
     }.items():
         ce.register_command(alias, ce._registry[target])
 
