@@ -4,6 +4,11 @@
 > Transform the existing research‑assistant into a local “mini‑operating‑system” agent with multi‑step reasoning, an extensible command framework, and a transparent Streamlit UI.
 > Changes are delivered in **phases** so that Copilot/Codex can apply them incrementally.
 
+> **Changelog & Documentation**
+> - After each change, append an entry to `CHANGELOG.md` summarizing the update and noting the current phase.
+> - Include clear docstrings and comments so future agents can navigate the codebase.
+> - Keep the user-facing `README.md` up to date as features are added.
+
 ---
 
 ## 📋 Prerequisites

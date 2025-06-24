@@ -7,6 +7,7 @@ import sys
 from config import Config
 from error_logger import ErrorLogger
 from command_executor import CommandExecutor
+from command_registration import register_core_commands
 from context_manager import ContextManager
 from output_manager import OutputManager
 from agent_state import AgentState
@@ -106,6 +107,7 @@ def main():
     config = Config()
     logger = ErrorLogger(config)
     ce = CommandExecutor(logger)
+    register_core_commands(ce)
     cm = ContextManager(config, logger)
     om = OutputManager(config, logger)
     as_state = AgentState(config, logger)
