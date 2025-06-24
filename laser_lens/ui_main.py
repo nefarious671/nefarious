@@ -348,8 +348,10 @@ def run_stream():
                 if pos < len(full_text) and text_placeholder:
                     text_placeholder.markdown(full_text[pos:])
                 copy_id = f"copy_{loop_idx}"
+                # Use full Unicode codepoint to avoid UTF-8 surrogate errors
+                # encountered when the button was defined with surrogate pairs.
                 loop_container.markdown(
-                    f"<button id='{copy_id}'>\uD83D\uDCCB Copy</button>",
+                    f"<button id='{copy_id}'>📋 Copy</button>",
                     unsafe_allow_html=True,
                 )
                 safe = json.dumps(full_text)
