@@ -34,3 +34,9 @@
 - Improved `READ_LINES` error handling and added edge case tests.
 - Added alias test for `RL`, more READ_LINES and EXEC edge case tests, and
   removed `agent_state/state.json` from version control.
+
+## Phase 8 - File I/O Refinements
+- Roadmap updated with a new phase focusing on APPEND_FILE and more robust
+  WRITE_FILE behaviour.
+- Fixed Streamlit UI bug that caused duplicate text to appear during
+  streaming output.

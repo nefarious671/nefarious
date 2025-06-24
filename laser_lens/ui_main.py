@@ -286,36 +286,36 @@ def run_stream():
     # Pattern to intercept command markers
     cmd_pattern = re.compile(r"\[\[COMMAND:\s*(?P<name>\w+)(?P<args>.*?)\]\]", re.DOTALL)
 
-    loop_container = st.container()
-    st.session_state.stream_blocks.append(loop_container)
+    loop_placeholder = st.empty()
+    st.session_state.stream_blocks.append(loop_placeholder)
     buffer = ""
 
     try:
         for event_type, loop_idx, _, payload in agent.run():
             if event_type == "chunk":
                 buffer += payload
-                loop_container.markdown(buffer)
+                loop_placeholder.markdown(buffer)
 
             elif event_type == "loop_end":
                 # Re-render final loop with command outputs
                 full_text = buffer
-                loop_container.empty()
+                loop_placeholder.empty()
                 results = agent_state.get_state("command_results") or []
                 pos = 0
                 r_idx = 0
                 for m in cmd_pattern.finditer(full_text):
                     pre = full_text[pos:m.start()]
                     if pre.strip():
-                        loop_container.markdown(pre)
+                        loop_placeholder.markdown(pre)
                     cmd_name = m.group("name")
                     arg_str = m.group("args").strip()
                     result = results[r_idx][1] if r_idx < len(results) else ""
-                    loop_container.info(f"\u25B6 {cmd_name} {arg_str}")
-                    loop_container.code(str(result), language="bash")
+                    loop_placeholder.info(f"\u25B6 {cmd_name} {arg_str}")
+                    loop_placeholder.code(str(result), language="bash")
                     pos = m.end()
                     r_idx += 1
                 if pos < len(full_text):
-                    loop_container.markdown(full_text[pos:])
+                    loop_placeholder.markdown(full_text[pos:])
                 buffer = ""
 
                 frac = loop_idx / total_loops
@@ -329,8 +329,8 @@ def run_stream():
 
                 # Prepare container for next loop
                 if loop_idx < total_loops:
-                    loop_container = st.container()
-                    st.session_state.stream_blocks.append(loop_container)
+                    loop_placeholder = st.empty()
+                    st.session_state.stream_blocks.append(loop_placeholder)
 
             elif event_type == "error":
                 message, exc = payload
