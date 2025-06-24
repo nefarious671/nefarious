@@ -31,3 +31,4 @@
 - Full uploads saved to `outputs/` when truncated and referenced in context.
 - Added `READ_LINES` and `HELP` commands with registration and docs.
 - Prompt now states the agent runs inside a mini OS sandbox.
+- Improved `READ_LINES` error handling and added edge case tests.

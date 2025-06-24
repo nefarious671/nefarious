@@ -56,3 +56,6 @@ The complete content is saved to `outputs/full_<name>` for later retrieval.
 | HELP           | Show OS info and command list.            |
 | *(plugins)*    | Additional commands registered via entry points. |
 
+`READ_LINES` requires numeric `start` and `end` parameters. If the values are
+non-numeric or the range is invalid the command returns an error message.
+
