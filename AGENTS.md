@@ -132,6 +132,28 @@ st.code(result, language="bash")
 
 ---
 
+## 📚 Documentation & Testing Strategy
+
+To keep each phase manageable, follow this iterative workflow:
+
+1. **Docstrings & Comments** – Every new function or class must include a
+   docstring summarising its purpose and arguments. Inline comments should
+   explain any non‑obvious logic.
+2. **Changelog Updates** – After completing a phase task, append a bullet to
+   `CHANGELOG.md` describing the change and noting the phase number.
+3. **Tests** – Add or extend `tests/` with unit tests for new behaviour. Use
+   `pytest` for execution and `ruff` for style checking. Aim to gradually raise
+   coverage so phase‑4 can reach 80 %.
+4. **Automation** – Future PRs should include a minimal GitHub Actions workflow
+   running `ruff` and `pytest -q`. This keeps the feedback loop automatic.
+5. **README** – Document any user‑visible commands or UI changes so the next
+   agent has up‑to‑date instructions.
+
+This process ensures every phase is reviewable and that regressions are caught
+early.
+
+---
+
 ### Commit Message Template
 
 ```

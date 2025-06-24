@@ -1,6 +1,7 @@
 # ui_main.py
 
 import os
+import re
 import streamlit as st
 
 from config import Config
@@ -244,6 +245,7 @@ def start_agent() -> bool:
     st.session_state.progress_bar.progress(0.0)
     st.session_state.error_container.empty()
     st.session_state.stream_content = ""
+    st.session_state.stream_blocks = []
 
     # Instantiate the agent (it will call get_context() under the hood)
     try:
@@ -277,43 +279,57 @@ def run_stream():
         return
     total_loops = agent.loops
 
+    # Pattern to intercept command markers
+    cmd_pattern = re.compile(r"\[\[COMMAND:\s*(?P<name>\w+)(?P<args>.*?)\]\]", re.DOTALL)
+
+    loop_container = st.container()
+    st.session_state.stream_blocks.append(loop_container)
     buffer = ""
-    sentence_enders = {".", "?", "!"}
-
-    if "stream_content" not in st.session_state:
-        st.session_state.stream_content = ""
-
-    def flush_buffer_ui(final: bool = False) -> None:
-        """Append buffered text to the stream placeholder."""
-        nonlocal buffer
-        if not buffer.strip():
-            return
-        st.session_state.stream_content += buffer
-        st.session_state.stream_placeholder.markdown(st.session_state.stream_content)
-        buffer = ""
 
     try:
         for event_type, loop_idx, _, payload in agent.run():
             if event_type == "chunk":
                 buffer += payload
-                # Flush when buffer ends in a sentence ender or is large
-                if (
-                    any(buffer.rstrip().endswith(p) for p in sentence_enders)
-                    or len(buffer) > 200
-                ):
-                    flush_buffer_ui()
+                loop_container.markdown(buffer)
 
             elif event_type == "loop_end":
-                # Flush remaining buffer before updating progress
-                flush_buffer_ui(final=True)
+                # Re-render final loop with command outputs
+                full_text = buffer
+                loop_container.empty()
+                results = agent_state.get_state("command_results") or []
+                pos = 0
+                r_idx = 0
+                for m in cmd_pattern.finditer(full_text):
+                    pre = full_text[pos:m.start()]
+                    if pre.strip():
+                        loop_container.markdown(pre)
+                    cmd_name = m.group("name")
+                    arg_str = m.group("args").strip()
+                    result = results[r_idx][1] if r_idx < len(results) else ""
+                    loop_container.info(f"\u25B6 {cmd_name} {arg_str}")
+                    loop_container.code(str(result), language="bash")
+                    pos = m.end()
+                    r_idx += 1
+                if pos < len(full_text):
+                    loop_container.markdown(full_text[pos:])
+                buffer = ""
+
                 frac = loop_idx / total_loops
                 st.session_state.progress_bar.progress(frac)
 
+                # Auto-scroll to newest output
+                st.markdown(
+                    "<script>window.scrollTo(0, document.body.scrollHeight);</script>",
+                    unsafe_allow_html=True,
+                )
+
+                # Prepare container for next loop
+                if loop_idx < total_loops:
+                    loop_container = st.container()
+                    st.session_state.stream_blocks.append(loop_container)
+
             elif event_type == "error":
-                # Flush remaining buffer before showing error
-                flush_buffer_ui(final=True)
                 message, exc = payload
-                st.session_state.error_container.empty()
                 logger.display_interactive(
                     st.session_state.error_container, message, exc
                 )
@@ -329,11 +345,7 @@ def run_stream():
                     )
                 return
 
-        # After all loops finish, flush any leftover buffer
-        flush_buffer_ui(final=True)
-
     except CancelledException:
-        flush_buffer_ui(final=True)
         tmp_path = agent_state.get_state("tmp_path")
         if tmp_path and os.path.isfile(tmp_path):
             with open(tmp_path, "r", encoding="utf-8") as f:
