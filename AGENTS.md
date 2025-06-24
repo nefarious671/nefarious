@@ -158,6 +158,28 @@ lines from a saved oversize file using `READ_LINES`.
 
 ---
 
+## Phase 8 – File I/O Refinements
+
+Gemini testing revealed weaknesses when writing multi-line text and
+verifying file contents. To make the sandbox more reliable:
+
+1. **APPEND_FILE command**
+   - Provide a handler that appends text to an existing file under
+     `outputs/` without needing to `CAT` then `WRITE_FILE`.
+2. **Improve WRITE_FILE**
+   - Ensure any valid string (including newlines) is written intact.
+3. **Truncation notices**
+   - When CAT/READ_FILE output is shortened, prepend a warning describing
+     the original and truncated size.
+4. **Better error messages**
+   - Surface which argument failed validation when command parsing or
+     execution errors occur.
+
+> **Acceptance**: Agent can reliably append to files and receives clear
+warnings whenever output is truncated or parameters are invalid.
+
+---
+
 ## File‑by‑File TODO (cheat‑sheet for Copilot)
 
 | Path                  | Touch? | Key edits                 |
