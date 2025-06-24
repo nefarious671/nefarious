@@ -127,3 +127,25 @@ def EXEC(args: Dict[str, Any]) -> str:
         _logger.log("ERROR", f"Failed to EXEC '{cmd}'", e)
         return f"ERROR: Could not execute command: {e}"
 
+
+def WORD_COUNT(args: Dict[str, Any]) -> str:
+    """Return the line and word count of a file in the outputs directory."""
+    fname = args.get("filename")
+    if not fname:
+        return "ERROR: Missing required argument 'filename'."
+
+    safe_name = _output_mgr.sanitize_filename(fname)
+    path = os.path.join(os.path.expanduser(_cfg.safe_output_dir), safe_name)
+    if not os.path.isfile(path):
+        return f"ERROR: File {safe_name} does not exist."
+
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            text = f.read()
+        lines = len(text.splitlines())
+        words = len(text.split())
+        return f"{lines} lines, {words} words"
+    except Exception as e:  # pragma: no cover - unexpected
+        _logger.log("ERROR", f"Failed to WORD_COUNT {safe_name}", e)
+        return f"ERROR: Could not read file {safe_name}: {e}"
+

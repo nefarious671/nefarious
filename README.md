@@ -41,8 +41,10 @@ and CLI record metadata about each run in `outputs/session.json`.
 | LIST_OUTPUTS   | List files under outputs/.                |
 | DELETE_FILE    | Delete a file from outputs/.              |
 | EXEC           | Execute a sandboxed shell command.        |
+| WORD_COUNT     | Count lines and words in a file.          |
 | LS             | Alias for `LIST_OUTPUTS`.                 |
 | CAT            | Alias for `READ_FILE`.                    |
 | RM             | Alias for `DELETE_FILE`.                  |
+| WC             | Alias for `WORD_COUNT`.                   |
 | *(plugins)*    | Additional commands registered via entry points. |
 

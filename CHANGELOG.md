@@ -22,3 +22,4 @@
 ## Phase 5 - Optional Enhancements
 - Added `JOURNAL.md` for recording development notes and pain points.
 - Updated CI workflow to run `ruff check .` and fixed missing `re` import in `cli_main.py`.
+- Added `WORD_COUNT` command and corresponding tests.
