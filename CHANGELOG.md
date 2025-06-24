@@ -40,3 +40,8 @@
   WRITE_FILE behaviour.
 - Fixed Streamlit UI bug that caused duplicate text to appear during
   streaming output.
+
+## Phase 9 - Transparency & Dry Run
+- Added new phase describing truncation warnings, detailed errors and `dry_run` options.
+- Updated AGENTS.md with timestamp syncing and PR scoping guideline.
+- Fixed Streamlit warning about duplicated `model_name` widget defaults.

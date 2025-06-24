@@ -10,6 +10,9 @@
 > - Keep the user-facing `README.md` up to date as features are added.
 - Maintain `JOURNAL.md` with notes or pain points discovered while implementing each phase. Future agents can consult this journal before starting new work.
 - Agents may propose improvements or modifications to this roadmap and should update the relevant phase descriptions before implementing them.
+- Review `GEMINIOUTPUT.md` for the latest testing feedback. When new notes appear, add a phase update here and record the timestamp below.
+
+Last feedback synced: 2025-06-24 17:19 UTC
 
 ---
 
@@ -180,6 +183,26 @@ warnings whenever output is truncated or parameters are invalid.
 
 ---
 
+## Phase 9 – Transparency & Dry Run
+
+Building on Gemini feedback, increase clarity and safety:
+
+1. **Truncation warnings**
+   - Whenever uploaded context or command output is shortened, prefix the text
+     with `WARNING:` and include original vs truncated size.
+2. **Detailed errors**
+   - Return which argument failed validation when commands raise parsing errors.
+3. **Dry run option**
+   - Add `dry_run=True` parameter for `EXEC` and `WRITE_FILE` commands that
+     prints the would-be action without executing.
+4. **Tests & docs**
+   - Unit tests cover dry run and warning behaviour. Document in README.
+
+> **Acceptance**: Agent sees explicit truncation notices and can preview an
+`EXEC` command using `dry_run`.
+
+---
+
 ## File‑by‑File TODO (cheat‑sheet for Copilot)
 
 | Path                  | Touch? | Key edits                 |
@@ -210,6 +233,7 @@ To keep each phase manageable, follow this iterative workflow:
    running `ruff` and `pytest -q`. This keeps the feedback loop automatic.
 6. **README** – Document any user‑visible commands or UI changes so the next
    agent has up‑to‑date instructions.
+7. **Scope PRs Carefully** – When a feature request involves multiple large improvements, add them as new phases here instead of bundling everything into one PR.
 
 This process ensures every phase is reviewable and that regressions are caught
 early.
