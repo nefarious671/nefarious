@@ -188,7 +188,8 @@ send_msg_btn = st.sidebar.button(
 if send_msg_btn and msg.strip():
     context_manager.add_inline_context(msg.strip())
     st.sidebar.success("Message queued for next run.")
-    st.session_state.pause_msg = ""
+    if "pause_msg" in st.session_state:
+        st.session_state.pause_msg = ""
 
 paused_reason = agent_state.get_state("paused")
 if paused_reason:
@@ -308,6 +309,7 @@ def run_stream():
 
     loop_container = None
     text_placeholder = None
+    render_container = None
     current_loop = 0
     buffer = ""
 
@@ -317,6 +319,7 @@ def run_stream():
                 current_loop = loop_idx
                 loop_container = st.expander(f"Loop {loop_idx}", expanded=True)
                 text_placeholder = loop_container.empty()
+                render_container = loop_container.container()
                 st.session_state.stream_blocks.append(loop_container)
                 buffer = ""
 
@@ -330,23 +333,23 @@ def run_stream():
                 full_text = buffer
                 if text_placeholder:
                     text_placeholder.empty()
+                render_container = loop_container.container()
                 results = agent_state.get_state("command_results") or []
                 pos = 0
                 r_idx = 0
                 for m in cmd_pattern.finditer(full_text):
                     pre = full_text[pos:m.start()]
-                    if pre.strip() and text_placeholder:
-                        text_placeholder.markdown(pre)
+                    if pre.strip():
+                        render_container.markdown(pre)
                     cmd_name = m.group("name")
                     arg_str = m.group("args").strip()
                     result = results[r_idx][1] if r_idx < len(results) else ""
-                    if text_placeholder:
-                        text_placeholder.info(f"\u25B6 {cmd_name} {arg_str}")
-                        text_placeholder.code(str(result), language="bash")
+                    render_container.info(f"\u25B6 {cmd_name} {arg_str}")
+                    render_container.code(str(result), language="bash")
                     pos = m.end()
                     r_idx += 1
-                if pos < len(full_text) and text_placeholder:
-                    text_placeholder.markdown(full_text[pos:])
+                if pos < len(full_text):
+                    render_container.markdown(full_text[pos:])
                 copy_id = f"copy_{loop_idx}"
                 # Use full Unicode codepoint to avoid UTF-8 surrogate errors
                 # encountered when the button was defined with surrogate pairs.
@@ -374,6 +377,7 @@ def run_stream():
                 if loop_idx < total_loops:
                     loop_container = st.expander(f"Loop {loop_idx + 1}", expanded=True)
                     text_placeholder = loop_container.empty()
+                    render_container = loop_container.container()
                     st.session_state.stream_blocks.append(loop_container)
 
             elif event_type == "error":

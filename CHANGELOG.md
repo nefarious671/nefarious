@@ -58,3 +58,5 @@
 - Fixed Unicode surrogate pair in copy button to avoid encoding error (phase 9).
 - Improved retry logic to wait 10 seconds on 503 "model overloaded" errors
   (phase 9) and marked phase 10 as complete in AGENTS.md.
+- Fixed blank output after loops by rendering final text in a dedicated container
+  and guarded sidebar message reset to avoid session state errors.
