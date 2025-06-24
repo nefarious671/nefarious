@@ -1,6 +1,7 @@
 # handlers.py
 
 import os
+import subprocess
 from typing import Dict, Any
 
 from output_manager import OutputManager
@@ -97,3 +98,32 @@ def DELETE_FILE(args: Dict[str, Any]) -> str:
     except Exception as e:
         _logger.log("ERROR", f"Failed to DELETE_FILE {safe_name}", e)
         return f"ERROR: Could not delete file {safe_name}: {e}"
+
+
+def EXEC(args: Dict[str, Any]) -> str:
+    """Execute a shell command within the outputs sandbox."""
+    cmd = args.get("cmd")
+    if not cmd:
+        return "ERROR: Missing required argument 'cmd'."
+
+    banned = ["sudo", "rm -rf", "curl", "wget", "ssh"]
+    if any(b in cmd for b in banned):
+        return "ERROR: Command contains prohibited patterns."
+
+    try:
+        proc = subprocess.run(
+            cmd,
+            shell=True,
+            cwd=os.path.expanduser(_cfg.safe_output_dir),
+            timeout=10,
+            capture_output=True,
+            text=True,
+        )
+        output = (proc.stdout or "") + (proc.stderr or "")
+        return output.strip() if output.strip() else "(no output)"
+    except subprocess.TimeoutExpired:
+        return "ERROR: Command timed out."
+    except Exception as e:
+        _logger.log("ERROR", f"Failed to EXEC '{cmd}'", e)
+        return f"ERROR: Could not execute command: {e}"
+

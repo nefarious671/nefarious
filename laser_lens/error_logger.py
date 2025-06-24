@@ -53,7 +53,9 @@ class ErrorLogger:
         Note: We import Streamlit here so that CLI usage doesn't require it.
         """
         try:
-            import streamlit as st
+            import importlib
+            if importlib.util.find_spec("streamlit") is None:
+                raise ImportError
         except ImportError:
             # If Streamlit is not installed, fall back to printing the message
             print(f"[Streamlit missing] {message}", file=sys.stderr)

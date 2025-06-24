@@ -1,6 +1,5 @@
 # context_manager.py
 
-import os
 from typing import List, Tuple, Optional
 
 from config import Config

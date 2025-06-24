@@ -17,7 +17,7 @@ from utils import (
     save_pref_model,
     build_markdown,
 )
-from handlers import WRITE_FILE, READ_FILE, LIST_OUTPUTS, DELETE_FILE
+from command_registration import register_core_commands
 
 
 def get_available_models() -> list[str]:
@@ -61,10 +61,7 @@ agent_state = AgentState(config, logger)
 
 # Register command handlers
 ce = CommandExecutor(logger)
-ce.register_command("WRITE_FILE", WRITE_FILE)
-ce.register_command("READ_FILE", READ_FILE)
-ce.register_command("LIST_OUTPUTS", LIST_OUTPUTS)
-ce.register_command("DELETE_FILE", DELETE_FILE)
+register_core_commands(ce)
 
 st.set_page_config(page_title="Laser Lens UI", layout="wide")
 
