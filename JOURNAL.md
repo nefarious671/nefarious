@@ -6,3 +6,4 @@ This document records notes, lessons learned, and pain points discovered while w
 
 - *Initial entry:* set up journal for future PRs.
 - Added WORD_COUNT command as part of optional enhancements.
+- Implemented truncation of oversize context files.

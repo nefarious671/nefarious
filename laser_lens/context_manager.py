@@ -18,6 +18,22 @@ class ContextManager:
         # Internal list of (filename, content) tuples, ordered by upload time
         self._buffers: List[Tuple[str, str]] = []
 
+    def _truncate_large_file(self, text: str, file_name: str, *, limit: Optional[int] = None) -> str:
+        """Trim text if it exceeds the given token limit."""
+        if limit is None:
+            limit = self.config.max_context_tokens
+        if count_tokens(text) <= limit:
+            return text
+
+        marker = "\n...[truncated]...\n"
+        keep = max(0, (limit - len(marker)) // 2)
+        truncated = text[:keep] + marker + text[-keep:]
+        if self.error_logger:
+            self.error_logger.log(
+                "INFO", f"Truncated {file_name} to fit context window"
+            )
+        return truncated
+
     def upload_context(self, file_name: str, content: bytes) -> None:
         """
         Accept an uploaded file (bytes) named file_name.
@@ -40,6 +56,7 @@ class ContextManager:
             # parse_tmp returns (chunks, last_partial)
             chunks, _ = parse_tmp(text, self.config.default_prompt_delim)
             merged = "\n".join(chunks)
+            merged = self._truncate_large_file(merged, file_name)
             if self.error_logger:
                 self.error_logger.log(
                     "DEBUG",
@@ -47,6 +64,7 @@ class ContextManager:
                 )
             self._buffers.append((file_name, merged))
         elif lower.endswith(".md") or lower.endswith(".txt"):
+            text = self._truncate_large_file(text, file_name)
             if self.error_logger:
                 self.error_logger.log(
                     "DEBUG",
@@ -98,7 +116,13 @@ class ContextManager:
             combined = self.get_context()
             if count_tokens(combined) <= self.config.max_context_tokens:
                 break
-            if self._buffers:
+            if len(self._buffers) == 1:
+                name, text = self._buffers[0]
+                header_overhead = len(self.config.default_prompt_delim) * 2 + len(f" Context from: {name} ")
+                limit = max(0, self.config.max_context_tokens - header_overhead)
+                self._buffers[0] = (name, self._truncate_large_file(text, name, limit=limit))
+                break
+            elif self._buffers:
                 removed = self._buffers.pop(0)
                 if self.error_logger:
                     self.error_logger.log(

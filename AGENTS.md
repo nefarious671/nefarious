@@ -120,6 +120,22 @@ st.code(result, language="bash")
 * Plug‑in support for user‑defined commands via entry‑points.
 * Add `WORD_COUNT` command to report line and word counts.
 
+## Phase 6 – Context Overflow Handling
+
+When a single uploaded file is larger than `max_context_tokens`, the current
+behaviour drops the entire buffer. Instead, implement graceful truncation.
+
+1. Add `_truncate_large_file` helper in `context_manager.py`.
+   - Keep the first and last portion of the file with a `...[truncated]...`
+     marker so that length never exceeds the limit.
+   - Log an `INFO` notice when truncation occurs.
+2. Use this helper inside `upload_context` before storing the text.
+3. Unit test that oversize files are truncated rather than discarded.
+4. Document this behaviour in `README.md`.
+
+> **Acceptance**: Uploading a huge file still results in a trimmed context
+string returned by `get_context()`.
+
 ---
 
 ## File‑by‑File TODO (cheat‑sheet for Copilot)

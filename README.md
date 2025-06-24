@@ -32,6 +32,10 @@ their results in separate code sections. The view automatically scrolls to the
 newest output and offers a download button for the final Markdown. Both the UI
 and CLI record metadata about each run in `outputs/session.json`.
 
+Large uploads are truncated automatically if they would exceed the agent's
+context window. The first and last portions are kept with a `[truncated]`
+marker so oversized files still contribute useful context.
+
 ## Available Commands
 
 | Command        | Description                               |
