@@ -60,3 +60,5 @@
   (phase 9) and marked phase 10 as complete in AGENTS.md.
 - Fixed blank output after loops by rendering final text in a dedicated container
   and guarded sidebar message reset to avoid session state errors.
+- Sidebar now shows agent status, Start/Pause/Resume/Stop buttons are horizontal,
+  and blank loop expanders no longer appear (phase 10).

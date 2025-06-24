@@ -103,6 +103,8 @@ if "seed" not in st.session_state:
     st.session_state.seed = config.default_seed or 0
 if "rpm" not in st.session_state:
     st.session_state.rpm = config.default_rpm
+if "reset_pause_msg" not in st.session_state:
+    st.session_state.reset_pause_msg = False
 
 # Keep track of uploaded files in session_state so start_agent() can process them
 if "uploaded_files_list" not in st.session_state:
@@ -173,12 +175,20 @@ else:
 # Sidebar: Control Buttons
 st.sidebar.markdown("---")
 action_reason = st.sidebar.text_input("Reason", key="action_reason")
-start_btn = st.sidebar.button("▶️ Start")
-pause_btn = st.sidebar.button("⏸️ Pause")
-resume_btn = st.sidebar.button("▶️ Resume")
-stop_btn = st.sidebar.button("⏹️ Stop")
+btn_cols = st.sidebar.columns(4)
+with btn_cols[0]:
+    start_btn = st.button("▶️ Start")
+with btn_cols[1]:
+    pause_btn = st.button("⏸️ Pause")
+with btn_cols[2]:
+    resume_btn = st.button("▶️ Resume")
+with btn_cols[3]:
+    stop_btn = st.button("⏹️ Stop")
 
 # Message box (enabled when paused)
+if st.session_state.reset_pause_msg:
+    st.session_state.pause_msg = ""
+    st.session_state.reset_pause_msg = False
 msg = st.sidebar.text_input(
     "Message to Agent", key="pause_msg", disabled=not agent_state.get_state("paused")
 )
@@ -188,8 +198,7 @@ send_msg_btn = st.sidebar.button(
 if send_msg_btn and msg.strip():
     context_manager.add_inline_context(msg.strip())
     st.sidebar.success("Message queued for next run.")
-    if "pause_msg" in st.session_state:
-        st.session_state.pause_msg = ""
+    st.session_state.reset_pause_msg = True
 
 paused_reason = agent_state.get_state("paused")
 if paused_reason:
@@ -197,6 +206,15 @@ if paused_reason:
 cancel_reason = agent_state.get_state("cancelled")
 if cancel_reason:
     st.sidebar.info(f"Agent cancelled: {cancel_reason}")
+current_loop = agent_state.get_state("current_loop") or 0
+status = "Idle"
+if cancel_reason:
+    status = f"Cancelled at loop {current_loop}"
+elif paused_reason:
+    status = f"Paused at loop {current_loop}"
+elif st.session_state.agent is not None:
+    status = f"Running loop {current_loop} of {st.session_state.loops}"
+st.sidebar.markdown(f"**Status:** {status}")
 
 # Sidebar: “Reset State” button
 st.sidebar.markdown("---")
@@ -372,13 +390,8 @@ def run_stream():
                     "<script>window.scrollTo(0, document.body.scrollHeight);</script>",
                     unsafe_allow_html=True,
                 )
-
-                # Prepare container for next loop
-                if loop_idx < total_loops:
-                    loop_container = st.expander(f"Loop {loop_idx + 1}", expanded=True)
-                    text_placeholder = loop_container.empty()
-                    render_container = loop_container.container()
-                    st.session_state.stream_blocks.append(loop_container)
+                # Next loop expander will be created on-demand when output for
+                # that loop arrives. This avoids showing a blank container.
 
             elif event_type == "error":
                 message, exc = payload
