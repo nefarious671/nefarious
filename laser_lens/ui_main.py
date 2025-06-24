@@ -466,6 +466,8 @@ def run_stream():
             "output_file": saved,
         }
         output_manager.save_session_metadata(session_meta)
+        # Mark run as complete so sidebar status shows "Idle"
+        st.session_state.agent = None
     except Exception as e:
         logger.log("ERROR", "Failed to save final Markdown in UI", e)
         logger.display_interactive(
