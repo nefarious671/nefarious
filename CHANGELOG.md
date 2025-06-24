@@ -10,3 +10,7 @@
 - Created alias commands `LS`, `CAT` and `RM` via `command_registration.py`.
 - Initial README with setup and command documentation.
 
+## Phase 3 - Streamlit UX
+- UI parses command markers and renders results in separate blocks.
+- Auto-scrolls to newest output and provides final Markdown download.
+

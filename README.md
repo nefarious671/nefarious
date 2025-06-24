@@ -25,6 +25,10 @@ python -m laser_lens.cli_main --topic "Your research topic"
 streamlit run laser_lens/ui_main.py
 ```
 
+During each loop the UI highlights commands as informational blocks and shows
+their results in separate code sections. The view automatically scrolls to the
+newest output and offers a download button for the final Markdown.
+
 ## Available Commands
 
 | Command        | Description                               |
