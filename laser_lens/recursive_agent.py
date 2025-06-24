@@ -1,17 +1,10 @@
 # recursive_agent.py
 
-import io
 import os
 import time
 import tempfile
-from typing import Generator, Tuple, Any, Optional
-
-
-class CancelledException(Exception):
-    """Raised when the user requests cancellation."""
-
-    pass
-
+from collections import deque
+from typing import Any, Generator, Optional, Tuple
 
 import google.generativeai as genai
 
@@ -21,6 +14,12 @@ from command_executor import CommandExecutor
 from context_manager import ContextManager
 from output_manager import OutputManager
 from agent_state import AgentState
+
+
+class CancelledException(Exception):
+    """Raised when the user requests cancellation."""
+
+    pass
 
 
 class RecursiveAgent:
@@ -67,7 +66,11 @@ class RecursiveAgent:
 
         # Load persistent state (or default)
         self.current_loop = agent_state.get_state("current_loop") or 1
-        self.history = agent_state.get_state("history") or []
+        hist = agent_state.get_state("history") or []
+        try:
+            self.history = deque(hist, maxlen=3)
+        except Exception:
+            self.history = deque(maxlen=3)
         self.last_thought = agent_state.get_state("last_thought") or ""
         self.cancelled = False
         self.paused = agent_state.get_state("paused") or False
@@ -157,7 +160,24 @@ You are a “Laser Lens” recursive agent with the following capabilities:
         # 4) Include last_thought if present
         if self.last_thought:
             header += f"Your last thought:\n{self.last_thought}\n\n"
-        prompt = combined + header
+        prompt_parts = [combined + header]
+
+        # Include recent history
+        if self.history:
+            history_snippets = "\n".join(
+                f"- {h['response'][:200]}" for h in list(self.history)
+            )
+            prompt_parts.append(f"\n\n## Recent History\n{history_snippets}")
+
+        # Include tool outputs from previous loop
+        results = self.agent_state.get_state("command_results") or []
+        if results:
+            tool_context = "\n".join(
+                f"\u2022 {name}: {str(result)[:500]}" for name, result in results
+            )
+            prompt_parts.append(f"\n\n## Tool Outputs\n{tool_context}")
+
+        prompt = "".join(prompt_parts)
         if self.error_logger:
             self.error_logger.log("DEBUG", f"prompt length {len(prompt)} chars")
         return prompt
@@ -227,10 +247,8 @@ You are a “Laser Lens” recursive agent with the following capabilities:
 
             # Save loop result to history and state
             timestamp = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
-            self.history.append(
-                {"prompt": prompt, "response": full_response, "timestamp": timestamp}
-            )
-            self.agent_state.update_state("history", self.history)
+            self.history.append({"prompt": prompt, "response": full_response, "timestamp": timestamp})
+            self.agent_state.update_state("history", list(self.history))
             self.last_thought = full_response
             self.agent_state.update_state("last_thought", self.last_thought)
 
@@ -257,57 +275,8 @@ You are a “Laser Lens” recursive agent with the following capabilities:
             if self.paused:
                 break
 
+
         self.agent_state.save_state()
-
-        def _build_prompt(self, context_str: str) -> str:
-            """
-            Assemble the prompt by concatenating:
-            1. A brief “system” section describing available tools and file formats
-            2. Any uploaded context
-            3. Recursive instructions for this loop
-            4. The last thought, if present
-            """
-            # 1) The “system” or “instruction” block:
-            tool_instructions = """\
-    You are a “Laser Lens” recursive agent with the following capabilities:
-    • When you embed text of the form [[COMMAND: <NAME> key="value" …]], 
-        the CLI/UI will invoke a Python function named <NAME>(…) with those arguments.
-        Your handler functions can perform file I/O, run shell commands, or anything
-        that our CommandExecutor supports, then return a result that will be visible 
-        to you in a subsequent loop.
-
-    • You can rely on “uploaded context” (Markdown or TXT files) or on a .tmp stream
-        (partial outputs from prior loops). Any previous “.tmp” chunks have already been
-        merged into the `context_str` below.
-
-    • After you stream your response each loop, your full text is stored in “history”
-        and available to you as your “last_thought” in the next loop.
-
-    • If you wish to halt the recursion early, emit “[[COMMAND: CANCEL]]” or “[[COMMAND: PAUSE]]”.
-        The surrounding code will interpret that and either stop or pause.
-
-    • At the end of all loops, the CLI/UI will assemble your prompts/responses into a 
-        Markdown summary and save it to disk.
-    """
-
-            # 2) Any uploaded context
-            if context_str:
-                combined = tool_instructions + "\n---\n" + context_str + "\n\n"
-            else:
-                combined = tool_instructions + "\n"
-
-            # 3) Recursive instructions for this loop
-            header = f"You are a recursive agent analyzing: {self.topic}\n"
-            header += f"Loop {self.current_loop} of {self.loops}. "
-            header += (
-                "Decide whether to expand on your previous thought or to summarize.\n"
-            )
-
-            # 4) Include last_thought if present
-            if self.last_thought:
-                header += f"Your last thought:\n{self.last_thought}\n\n"
-
-            return combined + header
 
     def _enforce_rate_limit(self) -> None:
         """
