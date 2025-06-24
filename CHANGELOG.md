@@ -49,3 +49,7 @@
 - Fixed Streamlit warning about duplicated `model_name` widget defaults.
 - Added numbering to tool output summaries and DEBUG logs of command sequence.
 - New test ensures multiple file commands on the same file succeed when executed in a single prompt.
+
+## Maintenance
+- Marked phases 0-8 as complete in AGENTS.md; phase 9 remains in progress.
+- Ready for Gemini testing review and new feature requests.
