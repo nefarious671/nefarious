@@ -188,10 +188,12 @@ Capabilities:
 
     def run(self) -> Generator[Tuple[str, int, int, Any], None, None]:
         """
-        Execute recursive loops. Yields:
+        Execute recursive loops with retry handling. Yields:
           - ("chunk", loop_index, total_loops, text)
           - ("loop_end", loop_index, total_loops, full_response)
           - ("error", loop_index, total_loops, (message, exception))
+        If an error message contains "503" and "overloaded", the retry wait is
+        fixed at 10 seconds before trying again.
         """
         total_loops = self.loops
 
@@ -243,8 +245,14 @@ Capabilities:
                         )
                         yield ("error", self.current_loop, total_loops, err_payload)
                         return
-                    time.sleep(backoff)
-                    backoff *= 2
+                    # Special case: Gemini may return HTTP 503 when overloaded.
+                    # Pause for 10 seconds before retrying in that case.
+                    error_msg = str(e)
+                    if "503" in error_msg and "overloaded" in error_msg.lower():
+                        time.sleep(10)
+                    else:
+                        time.sleep(backoff)
+                        backoff *= 2
 
             if full_response is None:
                 full_response = ""
