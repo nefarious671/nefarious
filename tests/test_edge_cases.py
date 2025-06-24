@@ -9,7 +9,7 @@ from error_logger import ErrorLogger  # noqa: E402
 from config import Config  # noqa: E402
 from output_manager import OutputManager  # noqa: E402
 from context_manager import ContextManager  # noqa: E402
-from handlers import READ_LINES  # noqa: E402
+from handlers import READ_LINES, EXEC  # noqa: E402
 
 
 def test_parse_invalid_args():
@@ -66,3 +66,34 @@ def test_read_lines_bad_range(monkeypatch, tmp_path):
         f.write("one\ntwo\n")
     result = READ_LINES({"filename": "s.txt", "start": "a"})
     assert "start and end" in result
+
+
+def test_read_lines_negative_start(monkeypatch, tmp_path):
+    cfg = Config(safe_output_dir=str(tmp_path))
+    logger = ErrorLogger(cfg)
+    om = OutputManager(cfg, logger)
+    monkeypatch.setattr("handlers._cfg", cfg)
+    monkeypatch.setattr("handlers._output_mgr", om)
+    file_path = os.path.join(tmp_path, "neg.txt")
+    with open(file_path, "w", encoding="utf-8") as f:
+        f.write("one\ntwo\nthree\n")
+    result = READ_LINES({"filename": "neg.txt", "start": "-1", "end": "2"})
+    assert "Invalid line range" in result
+
+
+def test_read_lines_end_before_start(monkeypatch, tmp_path):
+    cfg = Config(safe_output_dir=str(tmp_path))
+    logger = ErrorLogger(cfg)
+    om = OutputManager(cfg, logger)
+    monkeypatch.setattr("handlers._cfg", cfg)
+    monkeypatch.setattr("handlers._output_mgr", om)
+    file_path = os.path.join(tmp_path, "rev.txt")
+    with open(file_path, "w", encoding="utf-8") as f:
+        f.write("1\n2\n3\n")
+    result = READ_LINES({"filename": "rev.txt", "start": "3", "end": "2"})
+    assert "Invalid line range" in result
+
+
+def test_exec_banned_pattern():
+    result = EXEC({"cmd": "sudo ls"})
+    assert "prohibited" in result

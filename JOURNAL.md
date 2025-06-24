@@ -11,3 +11,5 @@ This document records notes, lessons learned, and pain points discovered while w
 - Reviewed test coverage and added edge case tests for command parsing,
   context uploads and output saving. Enhanced READ_LINES to validate
   numeric ranges.
+- Added tests for RL alias and additional READ_LINES/EXEC edge cases.
+  Removed lingering state.json from version control.
