@@ -18,3 +18,6 @@
 ## Phase 4 - Hardening & Tests
 - Added simulation-based unit tests for EXEC timeout and sanitize_filename.
 - Introduced GitHub Actions workflow running ruff and pytest.
+
+## Phase 5 - Optional Enhancements
+- Added `JOURNAL.md` for recording development notes and pain points.

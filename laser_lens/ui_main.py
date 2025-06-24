@@ -63,6 +63,11 @@ agent_state = AgentState(config, logger)
 # Register command handlers
 ce = CommandExecutor(logger)
 register_core_commands(ce)
+try:
+    from command_registration import register_plugin_commands
+    register_plugin_commands(ce)
+except Exception:
+    pass
 
 st.set_page_config(page_title="Laser Lens UI", layout="wide")
 
@@ -386,6 +391,16 @@ def run_stream():
             file_name=filename,
             mime="text/markdown",
         )
+        session_meta = {
+            "topic": st.session_state.topic,
+            "loops": st.session_state.loops,
+            "model": models_available[st.session_state.model_idx],
+            "temperature": st.session_state.temperature,
+            "seed": st.session_state.seed,
+            "rpm": st.session_state.rpm,
+            "output_file": saved,
+        }
+        output_manager.save_session_metadata(session_meta)
     except Exception as e:
         logger.log("ERROR", "Failed to save final Markdown in UI", e)
         logger.display_interactive(

@@ -108,6 +108,11 @@ def main():
     logger = ErrorLogger(config)
     ce = CommandExecutor(logger)
     register_core_commands(ce)
+    try:
+        from command_registration import register_plugin_commands
+        register_plugin_commands(ce)
+    except Exception:
+        pass
     cm = ContextManager(config, logger)
     om = OutputManager(config, logger)
     as_state = AgentState(config, logger)
@@ -144,13 +149,34 @@ def main():
         sys.stderr.write(f"[ERROR] Failed to instantiate agent: {e}\n")
         sys.exit(1)
 
-    # Stream the output
+    # Stream the output with basic command rendering
+    cmd_pattern = re.compile(r"\[\[COMMAND:\s*(?P<name>\w+)(?P<args>.*?)\]\]", re.DOTALL)
+    buffer = ""
     try:
         for event_type, loop_idx, total_loops, payload in agent.run():
             if event_type == "chunk":
+                buffer += payload
                 sys.stdout.write(payload)
                 sys.stdout.flush()
             elif event_type == "loop_end":
+                full_text = buffer
+                buffer = ""
+                results = as_state.get_state("command_results") or []
+                pos = 0
+                r_idx = 0
+                for m in cmd_pattern.finditer(full_text):
+                    pre = full_text[pos:m.start()]
+                    if pre.strip():
+                        sys.stdout.write(pre)
+                    cmd_name = m.group("name")
+                    arg_str = m.group("args").strip()
+                    result = results[r_idx][1] if r_idx < len(results) else ""
+                    sys.stdout.write(f"\n\u25B6 {cmd_name} {arg_str}\n")
+                    sys.stdout.write(f"{result}\n")
+                    pos = m.end()
+                    r_idx += 1
+                if pos < len(full_text):
+                    sys.stdout.write(full_text[pos:])
                 sys.stdout.write(
                     f"\n\n--- End of loop {loop_idx} of {total_loops} ---\n\n"
                 )
@@ -172,6 +198,16 @@ def main():
     try:
         saved_path = om.save_output(suggested_name, md_content)
         print(f"\nFinal Markdown saved to: {saved_path}")
+        session_meta = {
+            "topic": args.topic,
+            "loops": args.loops,
+            "model": args.model,
+            "temperature": args.temperature,
+            "seed": args.seed,
+            "rpm": args.rpm,
+            "output_file": saved_path,
+        }
+        om.save_session_metadata(session_meta)
     except Exception:
         sys.stderr.write("Failed to save final Markdown.\n")
         sys.exit(1)
