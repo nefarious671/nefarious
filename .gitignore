@@ -141,3 +141,8 @@ $RECYCLE.BIN/
 .envrc
 venv/
 ENV/
+laser_lens/__pycache__/config.cpython-311.pyc
+laser_lens/__pycache__/output_manager.cpython-311.pyc
+laser_lens/__pycache__/recursive_agent.cpython-311.pyc
+laser_lens/__pycache__/utils.cpython-311.pyc
+laser_lens/agent_state/state.json
