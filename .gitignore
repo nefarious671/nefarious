@@ -1,6 +1,5 @@
 __pycache__
-outputs/*
-!outputs/
+outputs
 !outputs/GEMINIOUTPUT.md
 !outputs/GEMINIINPUT.md
 
