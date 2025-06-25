@@ -17,3 +17,4 @@ This document records notes, lessons learned, and pain points discovered while w
 - Moved Start button into settings form and converted control buttons to icons.
 - Implemented RUN_PYTHON command and expanded HELP output. Updated docs and tests accordingly.
 - Began phase 13 with Sphinx docs and README cleanup.
+\n- Completed Phase 14 by adding single-quote support to EXEC. Updated docs and tests.
