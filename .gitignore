@@ -1,5 +1,6 @@
 __pycache__
 outputs
+!outputs/GEMINIOUTPUT.md
 
 # --- Common Python gitignore patterns ---
 # Byte-compiled / optimized / DLL files
