@@ -81,3 +81,4 @@
 - Added Sphinx docs under `docs/` with command reference and API modules.
 - README now links to the docs and command table was moved.
 - UI footer includes a link to `/docs`.
+- Sphinx build now runs without warnings and phase 13 is complete.
