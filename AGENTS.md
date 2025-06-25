@@ -12,7 +12,7 @@
 - Agents may propose improvements or modifications to this roadmap and should update the relevant phase descriptions before implementing them.
 - Review `laser_lens/outputs/GEMINIOUTPUT.md` for automated notes from Gemini. Use this file and `laser_lens/outputs/GEMINIINPUT.md` to exchange messages between agents. When new feedback appears, add a phase update here and record the timestamp below.
 
-Last feedback synced: 2025-06-25 08:10 UTC
+Last feedback synced: 2025-06-25 10:01 UTC
 
 ### Phase Status
 
@@ -33,6 +33,7 @@ Last feedback synced: 2025-06-25 08:10 UTC
 | 12 – Resume Rendering Fix | ✅ Completed |
 | 13 – Documentation Overhaul | ✅ Completed |
 | 14 – Improved EXEC Quoting | ✅ Completed |
+| 15 – Pause Reason Display | 🔄 In Progress |
 
 ---
 
@@ -303,7 +304,28 @@ quotes difficult.
 3. **Tests**
    - Added unit test covering single-quoted arguments.
 
+
 > **Acceptance**: ``[[COMMAND: EXEC cmd='echo "hi"']]`` executes successfully.
+
+---
+
+## Phase 15 – Pause Reason Display
+
+UI feedback highlighted that reasons provided by ``PAUSE`` or ``CANCEL`` were
+not shown after the agent triggered them. The input box in the sidebar now
+displays the agent's reason in read-only mode and messages sent during a pause
+are preserved for the next loop.
+
+1. **UI Update**
+   - ``ui_main.py`` disables the ``Reason`` field when a pause or cancel reason
+     is present and shows that text.
+2. **Inline Messages**
+   - Added a test ensuring ``ContextManager.add_inline_context`` stores notes
+     for later prompts.
+
+> **Acceptance**: After pausing via ``[[COMMAND: PAUSE reason="break"]]`` the
+> sidebar shows "break" and messages sent while paused appear in the next
+> iteration.
 
 ---
 
@@ -314,9 +336,10 @@ quotes difficult.
 | `handlers.py`         | ✅      | add `EXEC`, alias map     |
 | `recursive_agent.py`  | ✅      | prompt injection, history |
 | `command_executor.py` | 🔄     | case‑insensitive lookup   |
-| `ui_main.py`          | 🎨     | command/output panes      |
+| `ui_main.py`          | 🎨     | pause reason display      |
 | `config.py`           | 🔄     | expose `SAFE_OUTPUT_DIR`  |
 | `tests/test_exec.py`  | ➕      | new tests                 |
+| `tests/test_inline_context.py` | ➕      | pause message test |
 
 ---
 

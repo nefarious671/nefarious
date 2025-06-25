@@ -18,3 +18,4 @@ This document records notes, lessons learned, and pain points discovered while w
 - Implemented RUN_PYTHON command and expanded HELP output. Updated docs and tests accordingly.
 - Began phase 13 with Sphinx docs and README cleanup.
 \n- Completed Phase 14 by adding single-quote support to EXEC. Updated docs and tests.
+- Started phase 15 to display pause/cancel reasons and ensure inline pause messages reach the agent.

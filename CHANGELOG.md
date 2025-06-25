@@ -87,3 +87,7 @@
 - Command parser now accepts single-quoted argument values.
 - Documentation includes advice for Windows quoting.
 - Added tests for single-quoted commands.
+
+## Phase 15 - Pause Reason Display
+- Sidebar now shows the agent-provided reason after PAUSE or CANCEL.
+- Added unit test for inline pause messages.
