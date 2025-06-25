@@ -14,8 +14,8 @@ cp .env.example .env  # add your API key
 ### API Keys
 
 The Streamlit UI can manage multiple Gemini API keys. Saved keys are stored in
-`~/.laser_lens_keys.json`. Use the **Add Key** button in the sidebar to enter a
-new key with an optional description and select it from the dropdown before
+`~/.laser_lens_keys.json`. Use the **Manage Keys** button in the sidebar to edit
+existing keys or add a new one, then select it from the dropdown before
 starting the agent.
 
 ### Python Sandbox

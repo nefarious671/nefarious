@@ -25,3 +25,13 @@ def test_pref_key(tmp_path, monkeypatch):
     utils.save_pref_key("k1")
     choice = utils.load_pref_key(["k0", "k1"])
     assert choice == "k1"
+
+
+def test_delete_key(tmp_path, monkeypatch):
+    path = tmp_path / "keys.json"
+    monkeypatch.setattr(utils, "KEYS_PATH", str(path))
+    utils.save_api_key("a", "1")
+    utils.save_api_key("b", "2")
+    utils.delete_api_key("a")
+    names = [k["name"] for k in utils.load_api_keys()]
+    assert names == ["b"]

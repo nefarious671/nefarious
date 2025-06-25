@@ -20,23 +20,23 @@ from utils import (
     build_markdown,
     load_api_keys,
     save_api_key,
+    delete_api_key,
     load_pref_key,
     save_pref_key,
 )
 from command_registration import register_core_commands
 
 
-def get_available_models() -> list[str]:
-    """
-    Attempt to list all Gemini models that support generateContent.
-    On failure, return a single default placeholder.
-    """
+def get_available_models(api_key: str | None = None) -> list[str]:
+    """Return available Gemini models using *api_key* if provided."""
     try:
         import google.generativeai as genai_list
-        from dotenv import load_dotenv
+        if api_key is None:
+            from dotenv import load_dotenv
 
-        load_dotenv()
-        genai_list.configure(api_key=os.getenv("GOOGLE_API_KEY"))  # type: ignore[attr-defined]
+            load_dotenv()
+            api_key = os.getenv("GOOGLE_API_KEY")
+        genai_list.configure(api_key=api_key)  # type: ignore[attr-defined]
 
         models_available = [
             m.name
@@ -52,6 +52,15 @@ def get_available_models() -> list[str]:
         models_available = ["models/gemini-2.0-pro"]
 
     return models_available
+
+
+def selected_api_key_value() -> str:
+    """Return the currently selected API key value if available."""
+    name = st.session_state.get("api_key_name", "")
+    for entry in st.session_state.get("api_keys", []):
+        if entry.get("name") == name:
+            return entry.get("key", "")
+    return os.getenv("GOOGLE_API_KEY", "")
 
 
 # Initialize singletons
@@ -77,7 +86,7 @@ st.set_page_config(page_title="Laser Lens UI", layout="wide")
 
 # Load dynamic model list once per session
 if "models_available" not in st.session_state:
-    st.session_state.models_available = get_available_models()
+    st.session_state.models_available = get_available_models(os.getenv("GOOGLE_API_KEY"))
 models_available = st.session_state.models_available
 
 if "model_name" not in st.session_state:
@@ -178,26 +187,44 @@ with st.sidebar.form("agent_settings"):
     with btn_cols[1]:
         start_btn = st.form_submit_button("▶️", help="Start")
 
-add_key_btn = st.sidebar.button("Add Key")
-if add_key_btn:
-    st.session_state.show_add_key = True
+manage_btn = st.sidebar.button("Manage Keys")
+if manage_btn:
+    st.session_state.show_manage_key = True
+    st.session_state.manage_selected = st.session_state.get("api_key_name", "")
 
-if st.session_state.get("show_add_key"):
-    with st.sidebar.form("add_key_form"):
-        st.write("Add API Key")
-        new_name = st.text_input("Name", key="new_key_name")
-        new_value = st.text_input("Value", type="password", key="new_key_value")
-        new_desc = st.text_input("Description", key="new_key_desc")
+if st.session_state.get("show_manage_key"):
+    with st.sidebar.form("manage_key_form"):
+        names = [k["name"] for k in st.session_state.api_keys]
+        choices = ["<New>"] + names
+        idx = choices.index(st.session_state.get("manage_selected", "<New>")) if st.session_state.get("manage_selected", "<New>") in choices else 0
+        choice = st.selectbox("Select", choices, index=idx, key="manage_select")
+        if choice != "<New>":
+            entry = next((e for e in st.session_state.api_keys if e.get("name") == choice), {})
+            key_name = st.text_input("Name", value=entry.get("name", ""), key="edit_key_name")
+            key_value = st.text_input("Value", value=entry.get("key", ""), type="password", key="edit_key_value")
+            key_desc = st.text_input("Description", value=entry.get("description", ""), key="edit_key_desc")
+        else:
+            key_name = st.text_input("Name", key="edit_key_name")
+            key_value = st.text_input("Value", type="password", key="edit_key_value")
+            key_desc = st.text_input("Description", key="edit_key_desc")
         save_k = st.form_submit_button("Save")
+        delete_k = st.form_submit_button("Delete")
         cancel_k = st.form_submit_button("Cancel")
-    if save_k and new_name and new_value:
-        save_api_key(new_name, new_value, new_desc)
+    if save_k and key_name and key_value:
+        save_api_key(key_name, key_value, key_desc)
         st.session_state.api_keys = load_api_keys()
-        st.session_state.api_key_name = new_name
-        save_pref_key(new_name)
-        st.session_state.show_add_key = False
+        st.session_state.api_key_name = key_name
+        save_pref_key(key_name)
+        st.session_state.show_manage_key = False
+    elif delete_k and choice != "<New>":
+        delete_api_key(choice)
+        st.session_state.api_keys = load_api_keys()
+        remaining = [k["name"] for k in st.session_state.api_keys]
+        st.session_state.api_key_name = remaining[0] if remaining else ""
+        save_pref_key(st.session_state.api_key_name)
+        st.session_state.show_manage_key = False
     elif cancel_k:
-        st.session_state.show_add_key = False
+        st.session_state.show_manage_key = False
 
 if apply_btn or start_btn:
     st.session_state.topic = topic_in
@@ -205,13 +232,19 @@ if apply_btn or start_btn:
     st.session_state.temperature = temp_in
     st.session_state.seed = seed_in
     st.session_state.rpm = rpm_in
-    st.session_state.model_idx = models_available.index(st.session_state.model_name)
+    new_models = get_available_models(selected_api_key_value())
+    st.session_state.models_available = new_models
+    if st.session_state.model_name not in new_models:
+        st.session_state.model_name = new_models[0]
+    st.session_state.model_idx = new_models.index(st.session_state.model_name)
 
 # Keep model_idx consistent with model_name on every run
-if st.session_state.model_name in models_available:
-    st.session_state.model_idx = models_available.index(st.session_state.model_name)
+if st.session_state.model_name in st.session_state.models_available:
+    st.session_state.model_idx = st.session_state.models_available.index(
+        st.session_state.model_name
+    )
 else:
-    st.session_state.model_name = models_available[0]
+    st.session_state.model_name = st.session_state.models_available[0]
     st.session_state.model_idx = 0
 
 # Sidebar: Control Buttons
@@ -343,11 +376,10 @@ def start_agent() -> bool:
 
     # Instantiate the agent (it will call get_context() under the hood)
     try:
-        api_key_val = os.getenv("GOOGLE_API_KEY")
-        for entry in st.session_state.api_keys:
-            if entry.get("name") == st.session_state.api_key_name:
-                api_key_val = entry.get("key")
-                break
+        api_key_val = selected_api_key_value()
+        if not api_key_val:
+            st.session_state.error_container.error("No API key selected")
+            return False
 
         st.session_state.agent = RecursiveAgent(
             config=config,
@@ -452,9 +484,12 @@ def run_stream():
 
             elif event_type == "error":
                 message, exc = payload
-                logger.display_interactive(
-                    st.session_state.error_container, message, exc
-                )
+                if "quota" in message.lower():
+                    st.session_state.error_container.error(message)
+                else:
+                    logger.display_interactive(
+                        st.session_state.error_container, message, exc
+                    )
                 tmp_path = agent_state.get_state("tmp_path")
                 if tmp_path and os.path.isfile(tmp_path):
                     with open(tmp_path, "r", encoding="utf-8") as f:
