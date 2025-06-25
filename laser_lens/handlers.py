@@ -37,16 +37,35 @@ COMMAND_HELP: Dict[str, tuple[str, str]] = {
 
 
 def WRITE_FILE(args: Dict[str, Any]) -> str:
+    """Write text to a file in the outputs directory.
+
+    Parameters
+    ----------
+    filename : str
+        Name of the file to write within ``outputs/``.
+    content : str
+        Text to save. If ``encoding`` is ``base64`` the value will be decoded
+        before saving.
+    dry_run : str, optional
+        If ``"true"`` no file is written and a preview message is returned.
+    encoding : str, optional
+        If set to ``"base64"`` content is treated as base64 encoded UTF-8.
     """
-    Usage in LLM output:
-        [[COMMAND: WRITE_FILE filename="notes.md" content="Hello world!"]]
-    Writes the given content to ./outputs/filename, returns a confirmation message.
-    """
+
     fname = args.get("filename")
     content = args.get("content", "")
+    encoding = str(args.get("encoding", "")).lower()
     dry = str(args.get("dry_run", "false")).lower() == "true"
     if not fname:
         return "ERROR: Missing required argument 'filename'."
+
+    if encoding == "base64":
+        try:
+            import base64
+
+            content = base64.b64decode(content).decode("utf-8")
+        except Exception as e:  # pragma: no cover - unexpected decode errors
+            return f"ERROR: Could not decode base64 content: {e}"
 
     if dry:
         safe = _output_mgr.sanitize_filename(fname)

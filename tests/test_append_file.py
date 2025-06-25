@@ -60,3 +60,20 @@ def test_read_file_truncation(tmp_path, monkeypatch):
     result = READ_FILE({"filename": "big.txt"})
     assert result.startswith("WARNING:")
     assert "CONTENT_START" in result
+
+
+def test_write_file_base64(tmp_path, monkeypatch):
+    """WRITE_FILE should decode base64 content when encoding=base64."""
+    import base64
+
+    cfg = Config(safe_output_dir=str(tmp_path))
+    logger = ErrorLogger(cfg)
+    om = OutputManager(cfg, logger)
+    monkeypatch.setattr('handlers._cfg', cfg)
+    monkeypatch.setattr('handlers._output_mgr', om)
+
+    text = "hello\nworld"
+    b64 = base64.b64encode(text.encode("utf-8")).decode("ascii")
+    WRITE_FILE({"filename": "b.txt", "content": b64, "encoding": "base64"})
+    with open(os.path.join(tmp_path, "b.txt"), "r", encoding="utf-8") as f:
+        assert f.read() == text

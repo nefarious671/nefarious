@@ -9,7 +9,8 @@ The following commands are available to the agent:
    * - Command
      - Description
    * - WRITE_FILE
-     - Save content to the outputs directory. Use ``dry_run=true`` to preview.
+     - Save content to the outputs directory. Use ``dry_run=true`` to preview or
+       ``encoding="base64"`` for base64 data.
    * - APPEND_FILE
      - Append text to an existing file.
    * - READ_FILE

@@ -12,7 +12,7 @@
 - Agents may propose improvements or modifications to this roadmap and should update the relevant phase descriptions before implementing them.
 - Review `laser_lens/outputs/GEMINIOUTPUT.md` for automated notes from Gemini. Use this file and `laser_lens/outputs/GEMINIINPUT.md` to exchange messages between agents. When new feedback appears, add a phase update here and record the timestamp below.
 
-Last feedback synced: 2025-06-25 16:43 UTC
+Last feedback synced: 2025-06-25 17:14 UTC
 
 ### Phase Status
 
@@ -36,7 +36,8 @@ Last feedback synced: 2025-06-25 16:43 UTC
 | 15 – Pause Reason Display | ✅ Completed |
 | 16 – Gemini API Key Management | ✅ Completed |
 | 17 – UI Button Refresh | ✅ Completed |
-| 18 – Robust WRITE_FILE Parsing | ☐ Proposed |
+| 18 – Robust WRITE_FILE Parsing | ✅ Completed |
+| 19 – Command Robustness | ☐ Proposed |
 
 ---
 
@@ -368,6 +369,25 @@ exactly, regardless of newlines or quoting. Consider supporting a
 
 > **Acceptance**: Multi-line content round-trips without corruption and
   relative paths no longer cause errors.
+
+---
+
+## Phase 19 – Command Robustness
+
+Incorporate feedback from recent Gemini testing to harden command handling and
+extend functionality.
+
+1. **RUN_PYTHON Multi-line Support** – allow blocks of Python code or provide a
+   base64-encoded option similar to ``WRITE_FILE``.
+2. **Unified Argument Parsing** – improve error messages and parsing logic for
+   all commands to reduce quoting mistakes.
+3. **EXEC Coverage** – test commonly used shell utilities and clearly document
+   any limitations.
+4. **Persistent Workspace** – verify files remain accessible across sessions and
+   highlight the behaviour in docs.
+
+> **Acceptance**: Enhanced error messages guide the user and complex command
+> inputs execute reliably.
 
 ---
 
