@@ -51,8 +51,9 @@ Both the UI and CLI record metadata about each run in `outputs/session.json`.
 Agents can share notes via `outputs/GEMINIOUTPUT.md` and respond using `outputs/GEMINIINPUT.md`.
 
 When paused—via the sidebar button or a `PAUSE` command—the sidebar displays a
-message box so you can send short notes to the agent. The agent must include a
-`reason` whenever issuing `PAUSE` or `CANCEL`.
+message box so you can send short notes to the agent. If the agent pauses or
+cancels itself, its reason appears in the sidebar as a read-only field. The
+agent must include a `reason` whenever issuing `PAUSE` or `CANCEL`.
 
 Large uploads are truncated automatically if they would exceed the agent's
 context window. The first and last portions are kept with a `[truncated]`

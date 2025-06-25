@@ -181,7 +181,18 @@ else:
 
 # Sidebar: Control Buttons
 st.sidebar.markdown("---")
-action_reason = st.sidebar.text_input("Reason", key="action_reason")
+
+paused_reason = agent_state.get_state("paused")
+cancel_reason = agent_state.get_state("cancelled")
+reason_display = paused_reason or cancel_reason or ""
+reason_disabled = bool(reason_display)
+
+if reason_disabled:
+    action_reason = st.sidebar.text_input(
+        "Reason", value=reason_display, key="action_reason", disabled=True
+    )
+else:
+    action_reason = st.sidebar.text_input("Reason", key="action_reason")
 btn_cols = st.sidebar.columns(3)
 with btn_cols[0]:
     pause_btn = st.button("⏸️", help="Pause")
@@ -205,10 +216,8 @@ if send_msg_btn and msg.strip():
     st.sidebar.success("Message queued for next run.")
     st.session_state.reset_pause_msg = True
 
-paused_reason = agent_state.get_state("paused")
 if paused_reason:
     st.sidebar.info(f"Agent paused: {paused_reason}")
-cancel_reason = agent_state.get_state("cancelled")
 if cancel_reason:
     st.sidebar.info(f"Agent cancelled: {cancel_reason}")
 current_loop = agent_state.get_state("current_loop") or 0
