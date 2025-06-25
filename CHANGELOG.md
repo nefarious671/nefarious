@@ -91,3 +91,5 @@
 ## Phase 15 - Pause Reason Display
 - Sidebar now shows the agent-provided reason after PAUSE or CANCEL.
 - Added unit test for inline pause messages.
+- Documentation link moved to the sidebar and built HTML added.
+- Added phases 16 and 17 to AGENTS roadmap.

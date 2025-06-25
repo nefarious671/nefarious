@@ -34,6 +34,8 @@ Last feedback synced: 2025-06-25 10:01 UTC
 | 13 – Documentation Overhaul | ✅ Completed |
 | 14 – Improved EXEC Quoting | ✅ Completed |
 | 15 – Pause Reason Display | 🔄 In Progress |
+| 16 – Gemini API Key Management | ☐ Proposed |
+| 17 – UI Button Refresh | ☐ Proposed |
 
 ---
 
@@ -326,6 +328,33 @@ are preserved for the next loop.
 > **Acceptance**: After pausing via ``[[COMMAND: PAUSE reason="break"]]`` the
 > sidebar shows "break" and messages sent while paused appear in the next
 > iteration.
+
+---
+
+## Phase 16 – Gemini API Key Management
+
+Enable multiple Gemini API keys so users can switch between them in the UI.
+
+1. **Key Storage**
+   - Store keys with names and optional descriptions in a local file.
+2. **UI Integration**
+   - Dropdown to select a saved key before starting the agent.
+   - "Add Key" button opens a popup to enter key value and description.
+
+> **Acceptance**: UI lists existing keys and the agent uses the selected one.
+
+---
+
+## Phase 17 – UI Button Refresh
+
+Update the sidebar control buttons for better usability.
+
+1. **Layout**
+   - Buttons should be larger square icons placed close together.
+2. **Styling**
+   - Remove borders and excess padding for a cleaner look.
+
+> **Acceptance**: Sidebar buttons appear larger and evenly spaced.
 
 ---
 
