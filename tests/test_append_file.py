@@ -36,6 +36,18 @@ def test_append_file_missing(tmp_path, monkeypatch):
     assert "does not exist" in result
 
 
+def test_write_file_dry_run(tmp_path, monkeypatch):
+    cfg = Config(safe_output_dir=str(tmp_path))
+    logger = ErrorLogger(cfg)
+    om = OutputManager(cfg, logger)
+    monkeypatch.setattr('handlers._cfg', cfg)
+    monkeypatch.setattr('handlers._output_mgr', om)
+
+    result = WRITE_FILE({"filename": "x.txt", "content": "hi", "dry_run": "true"})
+    assert "DRY RUN" in result
+    assert not os.path.exists(os.path.join(tmp_path, "x.txt"))
+
+
 def test_read_file_truncation(tmp_path, monkeypatch):
     cfg = Config(safe_output_dir=str(tmp_path))
     logger = ErrorLogger(cfg)

@@ -37,15 +37,17 @@ class ContextManager:
         marker = "\n...[truncated]...\n"
         keep = max(0, (limit - len(marker)) // 2)
         truncated = text[:keep] + marker + text[-keep:]
+        orig_len = len(text)
         if self.output_manager:
             safe_name = self.output_manager.sanitize_filename(f"full_{file_name}")
             self.output_manager.save_output(safe_name, text)
             truncated += f"\n\n[Full file saved as {safe_name}]"
+        warning = f"WARNING: truncated from {orig_len} chars to {len(truncated)} chars\n"
         if self.error_logger:
             self.error_logger.log(
                 "INFO", f"Truncated {file_name} to fit context window"
             )
-        return truncated
+        return warning + truncated
 
     def upload_context(self, file_name: str, content: bytes) -> None:
         """

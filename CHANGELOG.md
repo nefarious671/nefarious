@@ -65,3 +65,4 @@
 - Start button now submits settings form automatically and all control buttons use icons only.
 * Fixed loop counter persisting one beyond final loop and reset UI status on completion (phase 10).
 * Quota limit errors now abort execution immediately with a concise message (phase 9).
+* Added dry-run support for EXEC and WRITE_FILE, improved parse errors, and context warnings now include sizes (phase 9).
