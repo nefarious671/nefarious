@@ -4,6 +4,7 @@ import os
 import re
 import json
 import streamlit as st
+import streamlit.components.v1 as components
 
 from config import Config
 from error_logger import ErrorLogger
@@ -481,17 +482,17 @@ def run_stream():
                 if pos < len(full_text):
                     render_container.markdown(full_text[pos:])
                 copy_id = f"copy_{loop_idx}"
-                # Use full Unicode codepoint to avoid UTF-8 surrogate errors
-                # encountered when the button was defined with surrogate pairs.
-                loop_container.markdown(
-                    f"<button id='{copy_id}'>📋 Copy</button>",
-                    unsafe_allow_html=True,
-                )
                 safe = json.dumps(full_text)
-                st.markdown(
-                    f"<script>document.getElementById('{copy_id}').onclick=function(){{navigator.clipboard.writeText({safe});}};</script>",
-                    unsafe_allow_html=True,
-                )
+                # Embed button and script so clipboard copy works reliably
+                copy_html = f"""
+                <button id='{copy_id}'>\U0001F4CB Copy</button>
+                <script>
+                document.getElementById('{copy_id}').addEventListener('click', function() {{
+                    navigator.clipboard.writeText({safe});
+                }});
+                </script>
+                """
+                components.html(copy_html, height=32)
                 buffer = ""
 
                 frac = loop_idx / total_loops
