@@ -15,3 +15,4 @@ This document records notes, lessons learned, and pain points discovered while w
   Removed lingering state.json from version control.
 - Verified batch prompt with multiple file commands and added numbering for command logs.
 - Moved Start button into settings form and converted control buttons to icons.
+- Implemented RUN_PYTHON command and expanded HELP output. Updated docs and tests accordingly.

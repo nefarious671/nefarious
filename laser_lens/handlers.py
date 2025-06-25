@@ -15,6 +15,26 @@ _cfg = Config()
 _logger = ErrorLogger(_cfg)
 _output_mgr = OutputManager(_cfg, _logger)
 
+COMMAND_HELP: Dict[str, tuple[str, str]] = {
+    "WRITE_FILE": ("filename, content[, dry_run]", "Save text to outputs directory."),
+    "APPEND_FILE": ("filename, content", "Append text to an existing file."),
+    "READ_FILE": ("filename", "Read a file from outputs."),
+    "READ_LINES": ("filename, start, end", "Read a specific line range."),
+    "LIST_OUTPUTS": ("", "List files under outputs/"),
+    "DELETE_FILE": ("filename", "Delete a file from outputs."),
+    "EXEC": ("cmd[, dry_run]", "Run a shell command inside outputs/"),
+    "RUN_PYTHON": ("code", "Execute Python code inside outputs/"),
+    "WORD_COUNT": ("filename", "Count lines and words in a file."),
+    "LS": ("", "Alias for LIST_OUTPUTS"),
+    "CAT": ("filename", "Alias for READ_FILE"),
+    "RM": ("filename", "Alias for DELETE_FILE"),
+    "WC": ("filename", "Alias for WORD_COUNT"),
+    "RL": ("filename, start, end", "Alias for READ_LINES"),
+    "HELP": ("", "Show this message"),
+    "CANCEL": ("reason", "Stop recursion"),
+    "PAUSE": ("reason", "Pause recursion"),
+}
+
 
 def WRITE_FILE(args: Dict[str, Any]) -> str:
     """
@@ -163,6 +183,28 @@ def EXEC(args: Dict[str, Any]) -> str:
         return f"ERROR: Could not execute command: {e}"
 
 
+def RUN_PYTHON(args: Dict[str, Any]) -> str:
+    """Execute Python code inside the outputs sandbox."""
+    code = args.get("code")
+    if not code:
+        return "ERROR: Missing required argument 'code'."
+    try:
+        proc = subprocess.run(
+            ["python", "-c", code],
+            cwd=os.path.expanduser(_cfg.safe_output_dir),
+            timeout=10,
+            capture_output=True,
+            text=True,
+        )
+        output = (proc.stdout or "") + (proc.stderr or "")
+        return output.strip() if output.strip() else "(no output)"
+    except subprocess.TimeoutExpired:
+        return "ERROR: Python execution timed out."
+    except Exception as e:
+        _logger.log("ERROR", "Failed to RUN_PYTHON", e)
+        return f"ERROR: Could not execute python: {e}"
+
+
 def WORD_COUNT(args: Dict[str, Any]) -> str:
     """Return the line and word count of a file in the outputs directory."""
     fname = args.get("filename")
@@ -213,22 +255,19 @@ def READ_LINES(args: Dict[str, Any]) -> str:
 
 
 def HELP(args: Dict[str, Any]) -> str:
-    """Return summary of OS environment and available commands."""
+    """Return OS info and detailed command usage."""
     import platform
 
-    cmds = [
-        "WRITE_FILE",
-        "APPEND_FILE",
-        "READ_FILE",
-        "READ_LINES",
-        "LIST_OUTPUTS",
-        "DELETE_FILE",
-        "EXEC",
-        "WORD_COUNT",
-        "HELP",
-    ]
-    info = platform.platform()
-    return "Available commands: " + ", ".join(cmds) + f"\nOS: {info}"
+    lines = ["Available commands:"]
+    for name, (params, desc) in COMMAND_HELP.items():
+        if name in {"LS", "CAT", "RM", "WC", "RL"}:
+            prefix = "- "
+        else:
+            prefix = "* "
+        lines.append(f"{prefix}{name}({params}) - {desc}")
+
+    lines.append(f"OS: {platform.platform()}")
+    return "\n".join(lines)
 
 
 def CANCEL(args: Dict[str, Any]) -> str:

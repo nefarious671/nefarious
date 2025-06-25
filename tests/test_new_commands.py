@@ -27,7 +27,7 @@ def test_read_lines(monkeypatch, tmp_path):
 
 def test_help():
     result = HELP({})
-    assert "Available commands" in result
+    assert "RUN_PYTHON" in result
 
 
 def test_rl_alias(monkeypatch, tmp_path):

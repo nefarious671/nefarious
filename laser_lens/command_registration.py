@@ -7,6 +7,7 @@ from handlers import (
     LIST_OUTPUTS,
     DELETE_FILE,
     EXEC,
+    RUN_PYTHON,
     WORD_COUNT,
     HELP,
     CANCEL,
@@ -28,6 +29,7 @@ def register_core_commands(ce: CommandExecutor) -> None:
     ce.register_command("LIST_OUTPUTS", LIST_OUTPUTS)
     ce.register_command("DELETE_FILE", DELETE_FILE)
     ce.register_command("EXEC", EXEC)
+    ce.register_command("RUN_PYTHON", RUN_PYTHON)
     ce.register_command("WORD_COUNT", WORD_COUNT)
     ce.register_command("HELP", HELP)
     ce.register_command("CANCEL", CANCEL)

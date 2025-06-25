@@ -29,7 +29,7 @@ Last feedback synced: 2025-06-25 01:06 UTC
 | 8 – File I/O Refinements | ✅ Completed |
 | 9 – Transparency & Dry Run | ☐ In Progress |
 | 10 – Pause Messaging & UI Improvements | ✅ Completed |
-| 11 – Extended HELP & Python Sandbox | ☐ Proposed |
+| 11 – Extended HELP & Python Sandbox | ✅ Completed |
 | 12 – Resume Rendering Fix | ☐ Proposed |
 | 13 – Documentation Overhaul | ☐ Proposed |
 
