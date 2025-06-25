@@ -126,7 +126,7 @@ class RecursiveAgent:
         # 1) The “system” or “instruction” block:
         tool_instructions = """\
 You are a “Laser Lens” recursive agent operating inside a limited OS sandbox.
-The `outputs/` directory is your writable workspace.
+This directory is your sandboxed writable workspace.
 You can inspect available functionality using [[COMMAND: HELP]].
 Use `outputs/GEMINIOUTPUT.md` to leave notes for the developer and read their replies from `outputs/GEMINIINPUT.md`.
 Capabilities:
@@ -143,8 +143,8 @@ Capabilities:
   • After you stream your response each loop, your full text is stored in “history”
     and available to you as your “last_thought” in the next loop.
 
-  • If you wish to halt the recursion early, emit “[[COMMAND: CANCEL]]” or “[[COMMAND: PAUSE]]”.
-    The surrounding code will interpret that and either stop or pause.
+  • If you wish to halt the recursion early, emit `[[COMMAND: CANCEL reason="your reason here"]]` or `[[COMMAND: PAUSE reason="your reason here"]]`.
+    The surrounding code will interpret these commands, using your provided reason, and will either stop or pause execution accordingly.
 
   • At the end of all loops, the CLI/UI will assemble your prompts/responses into a 
     Markdown summary and save it to disk.
