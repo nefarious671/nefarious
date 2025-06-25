@@ -51,3 +51,16 @@ def test_alias_ls(monkeypatch, tmp_path):
     cmd, output = results[0]
     assert cmd == 'LS'
     assert 'sample.txt' in output
+
+
+def test_single_quote_args(tmp_path):
+    cfg = Config(safe_output_dir=str(tmp_path))
+    logger = ErrorLogger(cfg)
+    ce = CommandExecutor(logger)
+
+    def foo(args):
+        return args.get("val")
+
+    ce.register_command("FOO", foo)
+    results = ce.parse_and_execute("[[COMMAND: FOO val='bar baz']]")
+    assert results == [("FOO", "bar baz")]

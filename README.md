@@ -31,6 +31,9 @@ python -m laser_lens.cli_main --topic "Your research topic"
 The CLI now interprets command markers and prints their results inline,
 matching the formatting shown in the Streamlit UI.
 
+When passing a command with embedded double quotes to ``EXEC`` use single quotes
+around the entire ``cmd`` value to avoid quoting issues on Windows.
+
 ### Streamlit UI
 
 ```bash

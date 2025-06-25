@@ -21,7 +21,7 @@ The following commands are available to the agent:
    * - DELETE_FILE
      - Delete a file from outputs/.
    * - EXEC
-     - Execute a sandboxed shell command. Use ``dry_run=true`` to preview.
+     - Execute a sandboxed shell command. Use ``dry_run=true`` to preview. On Windows wrap the entire command in single quotes if it contains double quotes.
    * - RUN_PYTHON
      - Run Python code inside the sandbox.
    * - WORD_COUNT

@@ -82,3 +82,8 @@
 - README now links to the docs and command table was moved.
 - UI footer includes a link to `/docs`.
 - Sphinx build now runs without warnings and phase 13 is complete.
+
+## Phase 14 - Improved EXEC Quoting
+- Command parser now accepts single-quoted argument values.
+- Documentation includes advice for Windows quoting.
+- Added tests for single-quoted commands.
