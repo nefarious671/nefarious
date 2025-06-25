@@ -31,6 +31,7 @@ Last feedback synced: 2025-06-25 01:06 UTC
 | 10 – Pause Messaging & UI Improvements | ✅ Completed |
 | 11 – Extended HELP & Python Sandbox | ☐ Proposed |
 | 12 – Resume Rendering Fix | ☐ Proposed |
+| 13 – Documentation Overhaul | ☐ Proposed |
 
 ---
 
@@ -269,6 +270,21 @@ prior logs.
      restarting the scroll at the beginning.
 
 > **Acceptance**: Output picks up seamlessly after resuming.
+
+---
+
+## Phase 13 – Documentation Overhaul
+
+Consolidate existing documentation into a formal docs site.
+
+1. **Sphinx site**
+   - Generate API documentation from docstrings under a new `docs/` folder.
+   - Provide a short Makefile or script so `make html` builds the docs.
+2. **Content reorganisation**
+   - Move extended command descriptions out of `README.md` into the docs.
+   - Link to generated docs from the README and UI footer.
+
+> **Acceptance**: `make html` builds without warnings and README links to `/docs`.
 
 ---
 

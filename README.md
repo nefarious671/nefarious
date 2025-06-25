@@ -52,13 +52,13 @@ Severe API errors appear as concise messages. If a quota limit is hit the agent 
 
 | Command        | Description                               |
 | -------------- | ----------------------------------------- |
-| WRITE_FILE     | Save content to the outputs directory.    |
+| WRITE_FILE     | Save content to the outputs directory. Use `dry_run=true` to preview. |
 | APPEND_FILE    | Append text to an existing file.          |
 | READ_FILE      | Read a file from outputs.                 |
 | READ_LINES     | Read specific line range from a file.     |
 | LIST_OUTPUTS   | List files under outputs/.                |
 | DELETE_FILE    | Delete a file from outputs/.              |
-| EXEC           | Execute a sandboxed shell command.        |
+| EXEC           | Execute a sandboxed shell command. Use `dry_run=true` to preview. |
 | WORD_COUNT     | Count lines and words in a file.          |
 | LS             | Alias for `LIST_OUTPUTS`.                 |
 | CAT            | Alias for `READ_FILE`.                    |
@@ -72,4 +72,7 @@ Severe API errors appear as concise messages. If a quota limit is hit the agent 
 
 `READ_LINES` requires numeric `start` and `end` parameters. If the values are
 non-numeric or the range is invalid the command returns an error message.
+
+Both `WRITE_FILE` and `EXEC` accept a boolean `dry_run` parameter to preview the
+operation without making changes.
 

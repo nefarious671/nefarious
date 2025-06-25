@@ -70,12 +70,9 @@ class CommandExecutor:
         pair_pattern = re.compile(r'(\w+)\s*=\s*"(.*?)"', re.DOTALL)
         for key, val in pair_pattern.findall(raw):
             args[key] = val
-        # Validate that we consumed all text
-        reconstructed = " ".join(f'{k}="{v}"' for k, v in args.items())
         cleaned_raw = raw.replace("\n", " ").strip()
-        if args:
-            if reconstructed not in cleaned_raw:
-                raise ValueError(f"Invalid argument format: {raw}")
-        elif cleaned_raw:
-            raise ValueError(f"Invalid argument format: {raw}")
+        leftover = pair_pattern.sub("", cleaned_raw).strip()
+        if leftover:
+            token = leftover.split()[0]
+            raise ValueError(f"Invalid argument {token}")
         return args

@@ -17,6 +17,7 @@ def test_oversize_file_truncated():
     cm = ContextManager(cfg, logger, om)
     cm.upload_context("big.txt", b"A" * 200)
     ctx = cm.get_context()
+    assert "WARNING:" in ctx
     assert "[truncated]" in ctx
     assert "Context from: big.txt" in ctx
     files = om.list_outputs()

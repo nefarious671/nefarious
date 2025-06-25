@@ -24,8 +24,13 @@ def WRITE_FILE(args: Dict[str, Any]) -> str:
     """
     fname = args.get("filename")
     content = args.get("content", "")
+    dry = str(args.get("dry_run", "false")).lower() == "true"
     if not fname:
         return "ERROR: Missing required argument 'filename'."
+
+    if dry:
+        safe = _output_mgr.sanitize_filename(fname)
+        return f"DRY RUN: would write {len(content)} chars to {safe}"
 
     try:
         saved_path = _output_mgr.save_output(fname, content)
@@ -129,12 +134,16 @@ def DELETE_FILE(args: Dict[str, Any]) -> str:
 def EXEC(args: Dict[str, Any]) -> str:
     """Execute a shell command within the outputs sandbox."""
     cmd = args.get("cmd")
+    dry = str(args.get("dry_run", "false")).lower() == "true"
     if not cmd:
         return "ERROR: Missing required argument 'cmd'."
 
     banned = ["sudo", "rm -rf", "curl", "wget", "ssh"]
     if any(b in cmd for b in banned):
         return "ERROR: Command contains prohibited patterns."
+
+    if dry:
+        return f"DRY RUN: would execute '{cmd}'"
 
     try:
         proc = subprocess.run(

@@ -27,3 +27,12 @@ def test_exec_success(monkeypatch):
     monkeypatch.setattr(subprocess, "run", fake_run)
     result = EXEC({"cmd": "echo ok"})
     assert result == "ok"
+
+
+def test_exec_dry_run(monkeypatch):
+    def fail_run(*args, **kwargs):
+        raise AssertionError("should not be called")
+
+    monkeypatch.setattr(subprocess, "run", fail_run)
+    result = EXEC({"cmd": "echo hi", "dry_run": "true"})
+    assert "DRY RUN" in result

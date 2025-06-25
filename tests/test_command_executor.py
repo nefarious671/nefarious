@@ -33,7 +33,7 @@ def test_unknown_and_invalid_commands(tmp_path):
     assert results == []
 
     results = ce.parse_and_execute("[[COMMAND: BAD badarg]]")
-    assert results and results[0][1].startswith("ERROR:")
+    assert results and "badarg" in results[0][1]
 
 
 def test_alias_ls(monkeypatch, tmp_path):
