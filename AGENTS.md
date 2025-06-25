@@ -32,6 +32,7 @@ Last feedback synced: 2025-06-25 07:32 UTC
 | 11 – Extended HELP & Python Sandbox | ✅ Completed |
 | 12 – Resume Rendering Fix | ✅ Completed |
 | 13 – Documentation Overhaul | ✅ Completed |
+| 14 – Improved EXEC Quoting | 🚧 In Progress |
 
 ---
 
@@ -285,6 +286,24 @@ Consolidate existing documentation into a formal docs site.
    - Link to generated docs from the README and UI footer.
 
 > **Acceptance**: `make html` builds without warnings and README links to `/docs`.
+
+---
+
+## Phase 14 – Improved EXEC Quoting
+
+Gemini feedback highlighted quoting problems when running ``EXEC`` commands on
+Windows. The parser only accepted double quoted arguments which made nested
+quotes difficult.
+
+1. **Parser update**
+   - ``CommandExecutor`` now accepts single- or double-quoted argument values.
+2. **Docs**
+   - README and ``docs/commands.rst`` include guidance on wrapping the ``cmd``
+     value in single quotes when it contains double quotes.
+3. **Tests**
+   - Added unit test covering single-quoted arguments.
+
+> **Acceptance**: ``[[COMMAND: EXEC cmd='echo "hi"']]`` executes successfully.
 
 ---
 

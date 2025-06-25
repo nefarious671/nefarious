@@ -67,8 +67,13 @@ class CommandExecutor:
         Raises ValueError if format is invalid.
         """
         args: Dict[str, Any] = {}
-        pair_pattern = re.compile(r'(\w+)\s*=\s*"(.*?)"', re.DOTALL)
-        for key, val in pair_pattern.findall(raw):
+        pair_pattern = re.compile(
+            r"(\w+)\s*=\s*(\"[^\"]*\"|'[^']*')",
+            re.DOTALL,
+        )
+        for match in pair_pattern.finditer(raw):
+            key = match.group(1)
+            val = match.group(2)[1:-1]  # strip quotes
             args[key] = val
         cleaned_raw = raw.replace("\n", " ").strip()
         leftover = pair_pattern.sub("", cleaned_raw).strip()
