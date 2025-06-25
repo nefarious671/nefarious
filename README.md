@@ -39,7 +39,8 @@ streamlit run laser_lens/ui_main.py
 
 During each loop the UI highlights commands as informational blocks and shows
 their results in separate code sections. The view automatically scrolls to the
-newest output and offers a download button for the final Markdown. The sidebar
+newest output and offers a download button for the final Markdown. When resuming
+from a pause the page jumps back to the latest output instead of the top. The sidebar
 displays the current agent status. The Start button now lives inside the
 settings form so any changes are applied automatically, while the
 Pause/Resume/Stop controls appear in a single row using icon-only buttons.

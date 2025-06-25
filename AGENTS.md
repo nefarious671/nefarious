@@ -27,10 +27,10 @@ Last feedback synced: 2025-06-25 05:40 UTC
 | 6 – Context Overflow Handling | ✅ Completed |
 | 7 – OS Awareness & Chunked Reading | ✅ Completed |
 | 8 – File I/O Refinements | ✅ Completed |
-| 9 – Transparency & Dry Run | ☐ In Progress |
+| 9 – Transparency & Dry Run | ✅ Completed |
 | 10 – Pause Messaging & UI Improvements | ✅ Completed |
 | 11 – Extended HELP & Python Sandbox | ✅ Completed |
-| 12 – Resume Rendering Fix | ☐ Proposed |
+| 12 – Resume Rendering Fix | ✅ Completed |
 | 13 – Documentation Overhaul | ☐ Proposed |
 
 ---

@@ -73,3 +73,6 @@
 - Documented virtual environment setup in README.
 - Tests cover RUN_PYTHON and updated HELP output.
 - Moved GEMINIOUTPUT.md to laser_lens/outputs/ and introduced laser_lens/outputs/GEMINIINPUT.md for bidirectional notes (phase 9).
+
+## Phase 12 - Resume Rendering Fix
+- Resuming from pause now scrolls back to the latest output instead of the top.
