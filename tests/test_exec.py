@@ -36,3 +36,33 @@ def test_exec_dry_run(monkeypatch):
     monkeypatch.setattr(subprocess, "run", fail_run)
     result = EXEC({"cmd": "echo hi", "dry_run": "true"})
     assert "DRY RUN" in result
+
+def test_exec_single_quotes(monkeypatch, tmp_path):
+    """EXEC should handle single-quoted cmd values containing double quotes."""
+    from command_executor import CommandExecutor
+    from error_logger import ErrorLogger
+    from config import Config
+    from output_manager import OutputManager
+    from command_registration import register_core_commands
+
+    cfg = Config(safe_output_dir=str(tmp_path))
+    logger = ErrorLogger(cfg)
+    om = OutputManager(cfg, logger)
+    ce = CommandExecutor(logger)
+    monkeypatch.setattr('handlers._cfg', cfg)
+    monkeypatch.setattr('handlers._output_mgr', om)
+    register_core_commands(ce)
+
+    captured = {}
+    def fake_run(cmd, **kwargs):
+        captured['cmd'] = cmd
+        class Res:
+            stdout = 'hi'
+            stderr = ''
+        return Res()
+
+    monkeypatch.setattr(subprocess, 'run', fake_run)
+    text = "[[COMMAND: EXEC cmd='echo \"hi\"']]"
+    results = ce.parse_and_execute(text)
+    assert results == [("EXEC", "hi")]
+    assert captured['cmd'] == 'echo "hi"'
