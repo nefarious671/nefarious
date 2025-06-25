@@ -178,3 +178,13 @@ def get_api_key(name: str) -> str:
         if entry.get("name") == name:
             return entry.get("key", "")
     return ""
+
+
+def delete_api_key(name: str) -> None:
+    """Remove the API key entry matching *name* if it exists."""
+    keys = [k for k in load_api_keys() if k.get("name") != name]
+    try:
+        with open(KEYS_PATH, "w", encoding="utf-8") as f:
+            json.dump(keys, f, indent=2)
+    except Exception:
+        pass

@@ -97,3 +97,6 @@
 ## Phase 16 - Gemini API Key Management
 - Added persistent key storage in `~/.laser_lens_keys.json`.
 - Sidebar dropdown selects the active key and new keys can be added.
+- Manage Keys form supports editing and deleting stored keys.
+- Model list refreshes when a key is applied.
+- Stream shows friendly message when quota limits are hit.

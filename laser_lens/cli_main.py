@@ -21,17 +21,16 @@ from utils import (
     build_markdown,
 )
 
-def get_available_models() -> list[str]:
-    """
-    Attempt to list all Gemini models that support generateContent.
-    On failure, return a single default placeholder.
-    """
+def get_available_models(api_key: str | None = None) -> list[str]:
+    """Return available Gemini models using *api_key* if provided."""
     try:
         import google.generativeai as genai_list
-        from dotenv import load_dotenv
+        if api_key is None:
+            from dotenv import load_dotenv
 
-        load_dotenv()  # This loads GOOGLE_API_KEY from .env if present
-        genai_list.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+            load_dotenv()  # This loads GOOGLE_API_KEY from .env if present
+            api_key = os.getenv("GOOGLE_API_KEY")
+        genai_list.configure(api_key=api_key)
 
         # Filter models to those that support generateContent and have "gemini" in their name
         models_available = [
@@ -54,7 +53,7 @@ def get_available_models() -> list[str]:
 
 def main():
     # First, fetch list of available models
-    models_available = get_available_models()
+    models_available = get_available_models(os.getenv("GOOGLE_API_KEY"))
 
     # Load the last‐used model if present; else default to first
     saved_model = load_pref_model(models_available)
