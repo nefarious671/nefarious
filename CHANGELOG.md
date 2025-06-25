@@ -93,3 +93,7 @@
 - Added unit test for inline pause messages.
 - Documentation link moved to the sidebar and built HTML added.
 - Added phases 16 and 17 to AGENTS roadmap.
+
+## Phase 16 - Gemini API Key Management
+- Added persistent key storage in `~/.laser_lens_keys.json`.
+- Sidebar dropdown selects the active key and new keys can be added.

@@ -11,6 +11,13 @@ pip install -r requirements.txt
 cp .env.example .env  # add your API key
 ```
 
+### API Keys
+
+The Streamlit UI can manage multiple Gemini API keys. Saved keys are stored in
+`~/.laser_lens_keys.json`. Use the **Add Key** button in the sidebar to enter a
+new key with an optional description and select it from the dropdown before
+starting the agent.
+
 ### Python Sandbox
 
 To run `RUN_PYTHON` commands create a virtual environment and install

@@ -33,8 +33,8 @@ Last feedback synced: 2025-06-25 10:01 UTC
 | 12 – Resume Rendering Fix | ✅ Completed |
 | 13 – Documentation Overhaul | ✅ Completed |
 | 14 – Improved EXEC Quoting | ✅ Completed |
-| 15 – Pause Reason Display | 🔄 In Progress |
-| 16 – Gemini API Key Management | ☐ Proposed |
+| 15 – Pause Reason Display | ✅ Completed |
+| 16 – Gemini API Key Management | ✅ Completed |
 | 17 – UI Button Refresh | ☐ Proposed |
 
 ---

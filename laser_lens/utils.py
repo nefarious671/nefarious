@@ -7,6 +7,7 @@ import unicodedata
 from typing import List, Tuple
 
 PREFS_PATH = os.path.expanduser("~/.laser_lens_prefs.json")
+KEYS_PATH = os.path.expanduser("~/.laser_lens_keys.json")
 
 
 def slugify(text: str) -> str:
@@ -94,10 +95,86 @@ def save_pref_model(model_name: str) -> None:
     """
     Save the given model_name under the key "last_model" in the prefs file.
     """
-    data = {"last_model": model_name}
+    data = {}
+    if os.path.isfile(PREFS_PATH):
+        try:
+            with open(PREFS_PATH, "r", encoding="utf-8") as f:
+                data = json.load(f)
+        except Exception:
+            data = {}
+    data["last_model"] = model_name
     try:
         with open(PREFS_PATH, "w", encoding="utf-8") as f:
             json.dump(data, f)
     except Exception:
         # Silently ignore any write error
         pass
+
+
+def load_pref_key(names: List[str]) -> str:
+    """Return the last used key name if available."""
+    try:
+        if os.path.isfile(PREFS_PATH):
+            with open(PREFS_PATH, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            last = data.get("last_key", "")
+            if last in names:
+                return last
+    except Exception:
+        pass
+    return names[0] if names else ""
+
+
+def save_pref_key(name: str) -> None:
+    """Persist the chosen key name for next startup."""
+    data = {}
+    if os.path.isfile(PREFS_PATH):
+        try:
+            with open(PREFS_PATH, "r", encoding="utf-8") as f:
+                data = json.load(f)
+        except Exception:
+            data = {}
+    data["last_key"] = name
+    try:
+        with open(PREFS_PATH, "w", encoding="utf-8") as f:
+            json.dump(data, f)
+    except Exception:
+        pass
+
+
+def load_api_keys() -> List[dict]:
+    """Load stored API keys from KEYS_PATH."""
+    try:
+        if os.path.isfile(KEYS_PATH):
+            with open(KEYS_PATH, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            if isinstance(data, list):
+                return data
+    except Exception:
+        pass
+    return []
+
+
+def save_api_key(name: str, key: str, description: str = "") -> None:
+    """Add or update an API key entry."""
+    keys = load_api_keys()
+    for entry in keys:
+        if entry.get("name") == name:
+            entry["key"] = key
+            entry["description"] = description
+            break
+    else:
+        keys.append({"name": name, "key": key, "description": description})
+    try:
+        with open(KEYS_PATH, "w", encoding="utf-8") as f:
+            json.dump(keys, f, indent=2)
+    except Exception:
+        pass
+
+
+def get_api_key(name: str) -> str:
+    """Return the API key value for *name* if present."""
+    for entry in load_api_keys():
+        if entry.get("name") == name:
+            return entry.get("key", "")
+    return ""

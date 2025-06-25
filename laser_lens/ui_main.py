@@ -18,6 +18,10 @@ from utils import (
     load_pref_model,
     save_pref_model,
     build_markdown,
+    load_api_keys,
+    save_api_key,
+    load_pref_key,
+    save_pref_key,
 )
 from command_registration import register_core_commands
 
@@ -84,6 +88,13 @@ if "model_name" not in st.session_state:
 if "model_idx" not in st.session_state:
     st.session_state.model_idx = models_available.index(st.session_state.model_name)
 
+if "api_keys" not in st.session_state:
+    st.session_state.api_keys = load_api_keys()
+if "api_key_name" not in st.session_state:
+    names = [k["name"] for k in st.session_state.api_keys]
+    default_key = load_pref_key(names) if names else ""
+    st.session_state.api_key_name = default_key if default_key in names else (names[0] if names else "")
+
 # SESSION STATE KEYS
 if "agent" not in st.session_state:
     st.session_state.agent = None
@@ -145,6 +156,9 @@ with st.sidebar.form("agent_settings"):
         models_available,
         key="model_name",
     )
+    key_names = [k["name"] for k in st.session_state.api_keys]
+    if key_names:
+        st.selectbox("API Key", key_names, key="api_key_name")
     temp_in = st.slider(
         "Temperature", 0.0, 1.0, value=st.session_state.temperature, key="temp_in"
     )
@@ -163,6 +177,27 @@ with st.sidebar.form("agent_settings"):
         apply_btn = st.form_submit_button("Apply")
     with btn_cols[1]:
         start_btn = st.form_submit_button("▶️", help="Start")
+
+add_key_btn = st.sidebar.button("Add Key")
+if add_key_btn:
+    st.session_state.show_add_key = True
+
+if st.session_state.get("show_add_key"):
+    with st.sidebar.form("add_key_form"):
+        st.write("Add API Key")
+        new_name = st.text_input("Name", key="new_key_name")
+        new_value = st.text_input("Value", type="password", key="new_key_value")
+        new_desc = st.text_input("Description", key="new_key_desc")
+        save_k = st.form_submit_button("Save")
+        cancel_k = st.form_submit_button("Cancel")
+    if save_k and new_name and new_value:
+        save_api_key(new_name, new_value, new_desc)
+        st.session_state.api_keys = load_api_keys()
+        st.session_state.api_key_name = new_name
+        save_pref_key(new_name)
+        st.session_state.show_add_key = False
+    elif cancel_k:
+        st.session_state.show_add_key = False
 
 if apply_btn or start_btn:
     st.session_state.topic = topic_in
@@ -288,6 +323,7 @@ def start_agent() -> bool:
     # Save the chosen model so next time it’s the default
     chosen_model = models_available[st.session_state.model_idx]
     save_pref_model(chosen_model)
+    save_pref_key(st.session_state.api_key_name)
 
     # Clear previous run state if any (but keep context!)
     agent_state.delete_state("history")
@@ -307,6 +343,12 @@ def start_agent() -> bool:
 
     # Instantiate the agent (it will call get_context() under the hood)
     try:
+        api_key_val = os.getenv("GOOGLE_API_KEY")
+        for entry in st.session_state.api_keys:
+            if entry.get("name") == st.session_state.api_key_name:
+                api_key_val = entry.get("key")
+                break
+
         st.session_state.agent = RecursiveAgent(
             config=config,
             error_logger=logger,
@@ -320,7 +362,7 @@ def start_agent() -> bool:
             temperature=st.session_state.temperature,
             seed=st.session_state.seed or None,
             rpm=st.session_state.rpm,
-            api_key=os.getenv("GOOGLE_API_KEY"),
+            api_key=api_key_val,
         )
         return True
     except Exception as e:
