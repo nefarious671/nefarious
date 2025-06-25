@@ -233,6 +233,13 @@ Capabilities:
                     self.agent_state.save_state()
                     return
                 except Exception as e:
+                    if self._is_quota_error(e):
+                        msg = "API quota limit reached. Stopping agent."
+                        self.error_logger.log("ERROR", msg, e)
+                        err_payload = (msg, e)
+                        yield ("error", self.current_loop, total_loops, err_payload)
+                        return
+
                     retry_count += 1
                     msg = (
                         f"Error on loop {self.current_loop}, attempt {retry_count}: {e}"
@@ -309,6 +316,20 @@ Capabilities:
         if elapsed < interval:
             time.sleep(interval - elapsed)
         self._last_request_ts = time.time()
+
+    def _is_quota_error(self, exc: Exception) -> bool:
+        """Return True if *exc* indicates the API quota was exceeded."""
+        try:
+            from google.api_core.exceptions import ResourceExhausted
+
+            if isinstance(exc, ResourceExhausted):
+                return True
+        except Exception:
+            # google.api_core may not be installed during tests
+            pass
+
+        text = str(exc).lower()
+        return "quota" in text and "exceeded" in text
 
     def _stream_generation(self, prompt: str) -> Generator[str, None, None]:
         """

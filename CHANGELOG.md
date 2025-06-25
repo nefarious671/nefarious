@@ -64,3 +64,4 @@
   and blank loop expanders no longer appear (phase 10).
 - Start button now submits settings form automatically and all control buttons use icons only.
 * Fixed loop counter persisting one beyond final loop and reset UI status on completion (phase 10).
+* Quota limit errors now abort execution immediately with a concise message (phase 9).
