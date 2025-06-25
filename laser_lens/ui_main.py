@@ -277,6 +277,7 @@ if st.session_state.progress_bar is None:
     st.session_state.progress_bar = st.sidebar.progress(0.0)
 if st.session_state.error_container is None:
     st.session_state.error_container = st.empty()
+st.sidebar.markdown("[📖 Documentation](/docs/index.html)")
 
 
 def start_agent() -> bool:
@@ -503,6 +504,3 @@ if resume_btn and st.session_state.agent:
 
 if stop_btn and st.session_state.agent:
     st.session_state.agent.request_cancel(action_reason or "user cancel")
-
-# Documentation Link
-st.markdown("[📖 Documentation](/docs/index.html)")
