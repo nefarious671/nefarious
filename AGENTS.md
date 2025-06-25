@@ -10,7 +10,7 @@
 > - Keep the user-facing `README.md` up to date as features are added.
 - Maintain `JOURNAL.md` with notes or pain points discovered while implementing each phase. Future agents can consult this journal before starting new work.
 - Agents may propose improvements or modifications to this roadmap and should update the relevant phase descriptions before implementing them.
-- Review `outputs/GEMINIOUTPUT.md` for automated notes from Gemini. Use this file and `outputs/GEMINIINPUT.md` to exchange messages between agents. When new feedback appears, add a phase update here and record the timestamp below.
+- Review `laser_lens/outputs/GEMINIOUTPUT.md` for automated notes from Gemini. Use this file and `laser_lens/outputs/GEMINIINPUT.md` to exchange messages between agents. When new feedback appears, add a phase update here and record the timestamp below.
 
 Last feedback synced: 2025-06-25 05:40 UTC
 

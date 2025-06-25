@@ -72,4 +72,4 @@
 - Added RUN_PYTHON command to execute Python snippets in the outputs sandbox.
 - Documented virtual environment setup in README.
 - Tests cover RUN_PYTHON and updated HELP output.
-- Moved GEMINIOUTPUT.md to outputs/ and introduced GEMINIINPUT.md for bidirectional notes (phase 9).
+- Moved GEMINIOUTPUT.md to laser_lens/outputs/ and introduced laser_lens/outputs/GEMINIINPUT.md for bidirectional notes (phase 9).
