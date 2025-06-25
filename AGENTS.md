@@ -12,7 +12,7 @@
 - Agents may propose improvements or modifications to this roadmap and should update the relevant phase descriptions before implementing them.
 - Review `laser_lens/outputs/GEMINIOUTPUT.md` for automated notes from Gemini. Use this file and `laser_lens/outputs/GEMINIINPUT.md` to exchange messages between agents. When new feedback appears, add a phase update here and record the timestamp below.
 
-Last feedback synced: 2025-06-25 10:01 UTC
+Last feedback synced: 2025-06-25 16:43 UTC
 
 ### Phase Status
 
@@ -35,7 +35,8 @@ Last feedback synced: 2025-06-25 10:01 UTC
 | 14 – Improved EXEC Quoting | ✅ Completed |
 | 15 – Pause Reason Display | ✅ Completed |
 | 16 – Gemini API Key Management | ✅ Completed |
-| 17 – UI Button Refresh | ☐ Proposed |
+| 17 – UI Button Refresh | ✅ Completed |
+| 18 – Robust WRITE_FILE Parsing | ☐ Proposed |
 
 ---
 
@@ -355,6 +356,18 @@ Update the sidebar control buttons for better usability.
    - Remove borders and excess padding for a cleaner look.
 
 > **Acceptance**: Sidebar buttons appear larger and evenly spaced.
+
+---
+
+## Phase 18 – Robust WRITE_FILE Parsing
+
+Feedback indicates multi-line strings sometimes fail to save correctly when
+passed to `WRITE_FILE`. Improve argument parsing so any text is preserved
+exactly, regardless of newlines or quoting. Consider supporting a
+`base64`-encoded mode if standard quoting remains unreliable.
+
+> **Acceptance**: Multi-line content round-trips without corruption and
+  relative paths no longer cause errors.
 
 ---
 

@@ -20,3 +20,4 @@ This document records notes, lessons learned, and pain points discovered while w
 \n- Completed Phase 14 by adding single-quote support to EXEC. Updated docs and tests.
 - Started phase 15 to display pause/cancel reasons and ensure inline pause messages reach the agent.
 - Added a thinking mode toggle to suppress OS instructions in prompts.
+- Styled sidebar control buttons with larger square icons during phase 17.

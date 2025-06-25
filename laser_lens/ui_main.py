@@ -269,13 +269,27 @@ if reason_disabled:
     )
 else:
     action_reason = st.sidebar.text_input("Reason", key="action_reason")
-btn_cols = st.sidebar.columns(3)
+btn_cols = st.sidebar.columns(3, gap="small")
 with btn_cols[0]:
-    pause_btn = st.button("⏸️", help="Pause")
+    pause_btn = st.button("⏸️", help="Pause", use_container_width=True)
 with btn_cols[1]:
-    resume_btn = st.button("▶️", help="Resume")
+    resume_btn = st.button("▶️", help="Resume", use_container_width=True)
 with btn_cols[2]:
-    stop_btn = st.button("⏹️", help="Stop")
+    stop_btn = st.button("⏹️", help="Stop", use_container_width=True)
+st.sidebar.markdown(
+    """
+    <style>
+    div[data-testid="column"] > div.stButton button {
+        width: 3em;
+        height: 3em;
+        padding: 0;
+        margin: 0 0.25em 0.25em 0;
+        border: none;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
 
 # Message box (enabled when paused)
 if st.session_state.reset_pause_msg:

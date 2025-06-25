@@ -101,5 +101,9 @@
 - Model list refreshes when a key is applied.
 - Stream shows friendly message when quota limits are hit.
 
+## Phase 17 - UI Button Refresh
+- Sidebar control buttons are now larger square icons without borders.
+- README updated with note about button styling.
+
 ## Unphased - Thinking Mode
 - Optional chat-only prompt toggle in CLI (`--thinking-mode`) and UI checkbox.
