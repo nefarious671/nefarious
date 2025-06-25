@@ -1,7 +1,7 @@
 __pycache__
-outputs/*
-!outputs/GEMINIOUTPUT.md
-!outputs/GEMINIINPUT.md
+laser_lens/outputs/*
+!laser_lens/outputs/GEMINIOUTPUT.md
+!laser_lens/outputs/GEMINIINPUT.md
 
 # --- Common Python gitignore patterns ---
 # Byte-compiled / optimized / DLL files
