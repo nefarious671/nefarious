@@ -87,6 +87,9 @@ def main():
         default=Config().default_rpm,
         help="Requests per minute (rate limiting)."
     )
+    parser.add_argument("--thinking-mode",
+        action="store_true",
+        help="Enable chat-only reasoning mode without OS instructions.")
     parser.add_argument(
         "--resume",
         type=str,
@@ -144,6 +147,7 @@ def main():
             seed=args.seed,
             rpm=args.rpm,
             api_key=os.getenv("GOOGLE_API_KEY"),
+            thinking_mode=args.thinking_mode,
         )
     except Exception as e:
         sys.stderr.write(f"[ERROR] Failed to instantiate agent: {e}\n")

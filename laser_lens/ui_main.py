@@ -123,6 +123,8 @@ if "seed" not in st.session_state:
     st.session_state.seed = config.default_seed or 0
 if "rpm" not in st.session_state:
     st.session_state.rpm = config.default_rpm
+if "thinking_mode" not in st.session_state:
+    st.session_state.thinking_mode = config.default_thinking_mode
 if "reset_pause_msg" not in st.session_state:
     st.session_state.reset_pause_msg = False
 
@@ -181,6 +183,11 @@ with st.sidebar.form("agent_settings"):
     rpm_in = st.number_input(
         "Requests/minute", min_value=1, max_value=100, value=st.session_state.rpm, key="rpm_in"
     )
+    thinking_in = st.checkbox(
+        "Thinking Mode",
+        value=st.session_state.thinking_mode,
+        key="thinking_in",
+    )
     btn_cols = st.columns(2)
     with btn_cols[0]:
         apply_btn = st.form_submit_button("Apply")
@@ -232,6 +239,7 @@ if apply_btn or start_btn:
     st.session_state.temperature = temp_in
     st.session_state.seed = seed_in
     st.session_state.rpm = rpm_in
+    st.session_state.thinking_mode = thinking_in
     new_models = get_available_models(selected_api_key_value())
     st.session_state.models_available = new_models
     if st.session_state.model_name not in new_models:
@@ -395,6 +403,7 @@ def start_agent() -> bool:
             seed=st.session_state.seed or None,
             rpm=st.session_state.rpm,
             api_key=api_key_val,
+            thinking_mode=st.session_state.thinking_mode,
         )
         return True
     except Exception as e:
