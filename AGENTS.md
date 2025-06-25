@@ -12,7 +12,7 @@
 - Agents may propose improvements or modifications to this roadmap and should update the relevant phase descriptions before implementing them.
 - Review `GEMINIOUTPUT.md` for the latest testing feedback. When new notes appear, add a phase update here and record the timestamp below.
 
-Last feedback synced: 2025-06-24 18:34 UTC
+Last feedback synced: 2025-06-25 01:06 UTC
 
 ### Phase Status
 
@@ -29,6 +29,8 @@ Last feedback synced: 2025-06-24 18:34 UTC
 | 8 – File I/O Refinements | ✅ Completed |
 | 9 – Transparency & Dry Run | ☐ In Progress |
 | 10 – Pause Messaging & UI Improvements | ✅ Completed |
+| 11 – Extended HELP & Python Sandbox | ☐ Proposed |
+| 12 – Resume Rendering Fix | ☐ Proposed |
 
 ---
 
@@ -235,6 +237,38 @@ Incorporate Gemini feedback on conversation flow:
 
 > **Acceptance**: User can pause the agent, send a note, and resume without
 losing prior output.
+
+---
+
+## Phase 11 – Extended HELP & Python Sandbox
+
+Gemini feedback proposes richer command assistance and the ability to run
+Python code inside the sandbox.
+
+1. **Detailed HELP**
+   - `HELP` lists each command with its required and optional arguments and a
+     short description.
+2. **RUN_PYTHON command**
+   - New handler executes provided Python code within `outputs/`.
+3. **Sandbox environment**
+   - Document how to create a virtual environment via `python -m venv .venv`
+     and install requirements using `pip`.
+
+> **Acceptance**: Agent can run Python snippets and consult enhanced HELP
+output.
+
+---
+
+## Phase 12 – Resume Rendering Fix
+
+When an agent resumes from a pause, the UI currently scrolls back to the top of
+prior logs.
+
+1. **Continuation**
+   - Resume should continue rendering from the last output position instead of
+     restarting the scroll at the beginning.
+
+> **Acceptance**: Output picks up seamlessly after resuming.
 
 ---
 
