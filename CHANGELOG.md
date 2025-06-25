@@ -66,3 +66,9 @@
 * Fixed loop counter persisting one beyond final loop and reset UI status on completion (phase 10).
 * Quota limit errors now abort execution immediately with a concise message (phase 9).
 * Added dry-run support for EXEC and WRITE_FILE, improved parse errors, and context warnings now include sizes (phase 9).
+
+## Phase 11 - Extended HELP & Python Sandbox
+- HELP now lists each command with its arguments and a short description.
+- Added RUN_PYTHON command to execute Python snippets in the outputs sandbox.
+- Documented virtual environment setup in README.
+- Tests cover RUN_PYTHON and updated HELP output.

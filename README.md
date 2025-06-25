@@ -11,6 +11,16 @@ pip install -r requirements.txt
 cp .env.example .env  # add your API key
 ```
 
+### Python Sandbox
+
+To run `RUN_PYTHON` commands create a virtual environment and install
+the requirements:
+
+```bash
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+```
+
 ## Usage
 
 ### CLI
@@ -59,6 +69,7 @@ Severe API errors appear as concise messages. If a quota limit is hit the agent 
 | LIST_OUTPUTS   | List files under outputs/.                |
 | DELETE_FILE    | Delete a file from outputs/.              |
 | EXEC           | Execute a sandboxed shell command. Use `dry_run=true` to preview. |
+| RUN_PYTHON     | Run Python code inside the sandbox.       |
 | WORD_COUNT     | Count lines and words in a file.          |
 | LS             | Alias for `LIST_OUTPUTS`.                 |
 | CAT            | Alias for `READ_FILE`.                    |
