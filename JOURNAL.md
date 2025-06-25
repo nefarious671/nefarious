@@ -21,3 +21,4 @@ This document records notes, lessons learned, and pain points discovered while w
 - Started phase 15 to display pause/cancel reasons and ensure inline pause messages reach the agent.
 - Added a thinking mode toggle to suppress OS instructions in prompts.
 - Styled sidebar control buttons with larger square icons during phase 17.
+- Fixed broken copy button in stream output by using components.html for script.

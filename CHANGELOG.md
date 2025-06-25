@@ -107,3 +107,4 @@
 
 ## Unphased - Thinking Mode
 - Optional chat-only prompt toggle in CLI (`--thinking-mode`) and UI checkbox.
+- Fixed clipboard copy button in streaming pane using HTML components.
