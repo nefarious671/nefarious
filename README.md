@@ -56,6 +56,7 @@ from a pause the page jumps back to the latest output instead of the top. The si
 displays the current agent status. The Start button now lives inside the
 settings form so any changes are applied automatically, while the
 Pause/Resume/Stop controls appear in a single row using icon-only buttons.
+The icons are now larger square buttons with minimal padding for easier access.
 Both the UI and CLI record metadata about each run in `outputs/session.json`.
 Agents can share notes via `outputs/GEMINIOUTPUT.md` and respond using `outputs/GEMINIINPUT.md`.
 
