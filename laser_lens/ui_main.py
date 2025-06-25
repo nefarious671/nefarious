@@ -484,6 +484,11 @@ if pause_btn and st.session_state.agent:
     st.session_state.agent.request_pause(action_reason or "user pause")
 
 if resume_btn and st.session_state.agent:
+    # Scroll to the bottom so rendering continues from the last loop
+    st.markdown(
+        "<script>window.scrollTo(0, document.body.scrollHeight);</script>",
+        unsafe_allow_html=True,
+    )
     st.session_state.agent.resume()
     run_stream()
 

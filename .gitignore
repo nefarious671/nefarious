@@ -147,3 +147,5 @@ laser_lens/__pycache__/utils.cpython-311.pyc
 laser_lens/agent_state/state.json
 laser_lens/agent_state/state.json
 laser_lens/agent_state/state.json
+agent_state/
+test_outputs/
