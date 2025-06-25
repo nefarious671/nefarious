@@ -41,6 +41,8 @@ matching the formatting shown in the Streamlit UI.
 
 When passing a command with embedded double quotes to ``EXEC`` use single quotes
 around the entire ``cmd`` value to avoid quoting issues on Windows.
+For multi-line data use ``encoding="base64"`` with ``WRITE_FILE`` and provide
+base64 encoded content.
 
 ### Streamlit UI
 

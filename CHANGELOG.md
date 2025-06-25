@@ -105,6 +105,11 @@
 - Sidebar control buttons are now larger square icons without borders.
 - README updated with note about button styling.
 
+## Phase 18 - Robust WRITE_FILE Parsing
+- WRITE_FILE now accepts ``encoding="base64"`` and decodes content before saving.
+- Added unit test for base64 writing.
+- Documented the new option in README and command reference.
+
 ## Unphased - Thinking Mode
 - Optional chat-only prompt toggle in CLI (`--thinking-mode`) and UI checkbox.
 - Fixed clipboard copy button in streaming pane using HTML components.
