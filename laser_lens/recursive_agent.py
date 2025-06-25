@@ -31,6 +31,9 @@ class RecursiveAgent:
       - "chunk": payload is a non-empty str (partial text).
       - "loop_end": payload is the full_response (str) for that loop.
       - "error": payload is (message: str, exception: Exception).
+
+    Set *thinking_mode* to ``True`` to remove OS sandbox instructions from the
+    system prompt, turning the agent into a chat-only assistant.
     """
 
     def __init__(
@@ -48,6 +51,7 @@ class RecursiveAgent:
         seed: Any,
         rpm: int,
         api_key: Optional[str] = None,
+        thinking_mode: bool = False,
     ):
         self.config = config
         self.error_logger = error_logger
@@ -63,6 +67,7 @@ class RecursiveAgent:
         self.temperature = temperature
         self.seed = seed
         self.rpm = rpm
+        self.thinking_mode = thinking_mode
 
         # Load persistent state (or default)
         self.current_loop = agent_state.get_state("current_loop") or 1
@@ -124,7 +129,14 @@ class RecursiveAgent:
           4. The last thought, if present
         """
         # 1) The “system” or “instruction” block:
-        tool_instructions = """\
+        if self.thinking_mode:
+            tool_instructions = (
+                "You are 'Laser Lens', a recursive reasoning agent. "
+                "Discuss the topic and iteratively refine your thoughts. "
+                "All responses appear directly in chat."
+            )
+        else:
+            tool_instructions = """\
 You are a “Laser Lens” recursive agent operating inside a limited OS sandbox.
 This directory is your sandboxed writable workspace.
 You can inspect available functionality using [[COMMAND: HELP]].

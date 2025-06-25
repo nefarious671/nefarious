@@ -35,6 +35,7 @@ pip install -r requirements.txt
 ```bash
 python -m laser_lens.cli_main --topic "Your research topic"
 ```
+Add `--thinking-mode` to run without OS sandbox instructions.
 The CLI now interprets command markers and prints their results inline,
 matching the formatting shown in the Streamlit UI.
 
@@ -46,6 +47,7 @@ around the entire ``cmd`` value to avoid quoting issues on Windows.
 ```bash
 streamlit run laser_lens/ui_main.py
 ```
+Check the "Thinking Mode" box in the sidebar to use chat-only prompts.
 
 During each loop the UI highlights commands as informational blocks and shows
 their results in separate code sections. The view automatically scrolls to the

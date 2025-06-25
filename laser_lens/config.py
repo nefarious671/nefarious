@@ -14,6 +14,7 @@ class Config:
     # Recursive parameters
     default_loops: int = 3
     default_prompt_delim: str = "###"  # delimiter for parsing .tmp streams
+    default_thinking_mode: bool = False  # chat-only prompt style
 
     # Context parameters
     max_context_tokens: int = 100000  # maximum tokens/characters allowed in combined context

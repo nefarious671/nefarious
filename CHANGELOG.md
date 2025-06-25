@@ -100,3 +100,6 @@
 - Manage Keys form supports editing and deleting stored keys.
 - Model list refreshes when a key is applied.
 - Stream shows friendly message when quota limits are hit.
+
+## Unphased - Thinking Mode
+- Optional chat-only prompt toggle in CLI (`--thinking-mode`) and UI checkbox.
