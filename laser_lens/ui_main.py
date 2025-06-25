@@ -218,7 +218,7 @@ if st.session_state.get("show_manage_key"):
         delete_k = st.form_submit_button("Delete")
         cancel_k = st.form_submit_button("Cancel")
     if save_k and key_name and key_value:
-        save_api_key(key_name, key_value, key_desc)
+        save_api_key(key_name, key_value, key_desc) # type: ignore[call-arg]
         st.session_state.api_keys = load_api_keys()
         st.session_state.api_key_name = key_name
         save_pref_key(key_name)
@@ -463,7 +463,7 @@ def run_stream():
                 full_text = buffer
                 if text_placeholder:
                     text_placeholder.empty()
-                render_container = loop_container.container()
+                render_container = loop_container.container() # type: ignore[assignment]
                 results = agent_state.get_state("command_results") or []
                 pos = 0
                 r_idx = 0
