@@ -494,3 +494,6 @@ if resume_btn and st.session_state.agent:
 
 if stop_btn and st.session_state.agent:
     st.session_state.agent.request_cancel(action_reason or "user cancel")
+
+# Documentation Link
+st.markdown("[📖 Documentation](/docs/index.html)")

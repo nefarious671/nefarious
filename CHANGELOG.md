@@ -76,3 +76,8 @@
 
 ## Phase 12 - Resume Rendering Fix
 - Resuming from pause now scrolls back to the latest output instead of the top.
+
+## Phase 13 - Documentation Overhaul
+- Added Sphinx docs under `docs/` with command reference and API modules.
+- README now links to the docs and command table was moved.
+- UI footer includes a link to `/docs`.
