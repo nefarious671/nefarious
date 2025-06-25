@@ -44,6 +44,7 @@ displays the current agent status. The Start button now lives inside the
 settings form so any changes are applied automatically, while the
 Pause/Resume/Stop controls appear in a single row using icon-only buttons.
 Both the UI and CLI record metadata about each run in `outputs/session.json`.
+Agents can share notes via `outputs/GEMINIOUTPUT.md` and respond using `outputs/GEMINIINPUT.md`.
 
 When paused—via the sidebar button or a `PAUSE` command—the sidebar displays a
 message box so you can send short notes to the agent. The agent must include a
